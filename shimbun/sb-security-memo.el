@@ -1,4 +1,4 @@
-;;; sb-toshiba.el --- shimbun backend for TOSHIBA Linux users ML
+;;; sb-security-memo.el --- shimbun backend for security-memo ML.
 
 ;; Copyright (C) 2001 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
@@ -24,18 +24,20 @@
 
 ;;; Commentary:
 
-;; This is shimbun backend for TOSHIBA Linux users ML.
-
 ;;; Code:
 
 (require 'shimbun)
-(require 'sb-fml)
+(require 'sb-w3m-dev)
 
-(luna-define-class shimbun-toshiba (shimbun-fml) ())
+(luna-define-class shimbun-security-memo (shimbun-w3m-dev) ())
 
-(defvar shimbun-toshiba-url "http://linux.toshiba-dme.co.jp/ML/tlinux-users-j/")
-(defvar shimbun-toshiba-groups '("linux-users-j"))
+(defvar shimbun-security-memo-url "http://memo.st.ryukoku.ac.jp/archive/")
+(defvar shimbun-security-memo-groups '("memo"))
+(defvar shimbun-security-memo-coding-system 'euc-japan)
 
-(provide 'sb-toshiba)
+(luna-define-method shimbun-reply-to ((shimbun shimbun-security-memo))
+  "memo@memo.st.ryukoku.ac.jp")
 
-;;; sb-linuxce-jp.el ends here
+(provide 'sb-security-memo)
+
+;;; sb-security-memo.el ends here
