@@ -148,7 +148,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.487.2.86 $"))
+    (let ((rev "$Revision: 1.487.2.87 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (format "1.3.%d"
 		   (- (string-to-number (match-string 1 rev)) 642)))))
@@ -7022,7 +7022,7 @@ The optional NEW-SESSION and INTERACTIVE-P are for the internal use."
       (not url)))) ;; interactive-p
   (let ((nofetch (eq url 'popup))
 	(buffer (unless new-session
-		  (if (and (bufferp w3m-last-visited-buffer)
+		  (if (and (buffer-live-p w3m-last-visited-buffer)
 			   (with-current-buffer w3m-last-visited-buffer
 			     (eq major-mode 'w3m-mode)))
 		      w3m-last-visited-buffer
