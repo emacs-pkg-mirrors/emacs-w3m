@@ -1,10 +1,11 @@
-;;; sb-h14m.el --- shimbun backend for h14m.org
+;;; sb-orca.el --- shimbun backend for www.orca.med.or.jp ML archive
 
-;; Author: Akihiro Arisawa <ari@mbf.sphere.ne.jp>
+;; Copyright (C) 2002 Masamichi Goudge M.D. <Matanuki@Goudge.org>
 
+;; Author: Masamichi Goudge M.D. <Matanuki@Goudge.org>
 ;; Keywords: news
 
-;;; Copyright:
+;; This file is a part of shimbun.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,22 +27,22 @@
 (require 'shimbun)
 (require 'sb-mhonarc)
 
-(luna-define-class shimbun-h14m (shimbun-mhonarc) ())
+(luna-define-class shimbun-orca (shimbun-mhonarc) ())
 
-(defvar shimbun-h14m-url "http://www.h14m.org/ml/")
-(defvar shimbun-h14m-groups '("hns-dev" "hns-users"))
-(defvar shimbun-h14m-reverse-flag nil)
-(defvar shimbun-h14m-litemplate-regexp
-  "<STRONG><A NAME=\"\\([0-9]+\\)\" HREF=\"\\(msg[0-9]+.html\\)\">\\([^<]+\\)</A></STRONG>\n<UL><LI><EM>From</EM>: \\([^<]+\\)</LI></UL>")
+(defvar shimbun-orca-url "http://www.orca.med.or.jp/ml/ml-archive/")
+(defvar shimbun-orca-groups '("orca-users" "orca-dev" "orca-tech" "orca-announce"))
+(defvar shimbun-orca-reverse-flag nil)
+(defvar shimbun-orca-litemplate-regexp
+  "<LI><STRONG><A NAME=\"\\([0-9]+\\)\" HREF=\"\\(msg[0-9]+.html\\)\">\\([^<]+\\)</A></STRONG> <EM>\\([^<]+\\)</EM>\n</LI>")
 
-(luna-define-method shimbun-index-url ((shimbun shimbun-h14m))
+(luna-define-method shimbun-index-url ((shimbun shimbun-orca))
   (concat (shimbun-url-internal shimbun)
-	  (shimbun-current-group-internal shimbun) "/maillist.cgi"))
+	  (shimbun-current-group-internal shimbun) "/index.html"))
 
-(luna-define-method shimbun-reply-to ((shimbun shimbun-h14m))
-  (concat (shimbun-current-group-internal shimbun) "@h14m.org"))
+(luna-define-method shimbun-reply-to ((shimbun shimbun-orca))
+  (concat (shimbun-current-group-internal shimbun) "@orca"))
 
-(luna-define-method shimbun-get-headers ((shimbun shimbun-h14m)
+(luna-define-method shimbun-get-headers ((shimbun shimbun-orca)
 					 &optional range)
   (let ((url (shimbun-index-url shimbun))
 	(pages (shimbun-header-index-pages range))
@@ -61,5 +62,6 @@
 	(goto-char (point-min)))
       headers)))
 
-(provide 'sb-h14m)
-;;; sb-h14m.el ends here
+(provide 'sb-orca)
+
+;;; sb-orca.el ends here
