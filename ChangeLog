@@ -1,9 +1,11 @@
 2004-04-20  TSUCHIYA Masatoshi  <tsuchiya@namazu.org>
 
-	* w3m-link-numbering.el (w3m-view-numbered-link): Removed.
-	(w3m-move-numbered-anchor): New command.
-	(w3m-link-numbering-mode-map): Use `w3m-move-numbered-anchor'
-	instead of `w3m-view-numbered-link'.
+	* w3m.el (emacs-w3m-version): Release 1.3.90.
+	(w3m-relationship-estimate-rules): Declare as a variable.
+
+	* w3m-e22.el: Removed.
+
+	* w3m-link-numbering.el: Removed.
 
 2004-04-19  TSUCHIYA Masatoshi  <tsuchiya@namazu.org>
 
