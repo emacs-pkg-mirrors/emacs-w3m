@@ -1,4 +1,4 @@
-	emacs-w3m FAQ ($Date: 2001-10-30 03:25:05 $)
+	emacs-w3m FAQ ($Date: 2001-10-30 23:31:51 $)
 
 * emacs-w3m 一般
 
@@ -28,7 +28,7 @@
    以下の w3m で動作することが確認されています．
 
 	w3m-0.2.1 以降
-	w3mmee-p19-3
+	w3mmee-p19-6
 	w3m-m17n-0.19 + m17n-dump-coding.patch
 
 * トラブル
