@@ -4,8 +4,8 @@
 
 ;; Author: NAKAJIMA Mikio <minakaji@namazu.org>
 ;; Keywords: news
-;; Version: $Id: sb-pocketgames.el,v 1.10.2.1 2004-06-25 02:18:03 tsuchiya Exp $
-;; Last Modified: $Date: 2004-06-25 02:18:03 $
+;; Version: $Id: sb-pocketgames.el,v 1.10.2.2 2004-06-27 09:32:31 tsuchiya Exp $
+;; Last Modified: $Date: 2004-06-27 09:32:31 $
 
 ;; This file is a part of shimbun.
 
