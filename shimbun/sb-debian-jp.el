@@ -1,8 +1,8 @@
-;;; sb-kde.el --- shimbun backend for www.KDE.gr.jp
+;;; sb-debian-jp.el --- shimbun backend for debian.or.jp
 
-;; Copyright (C) 2002 NAKAJIMA Mikio  <minakaji@osaka.email.ne.jp>
+;; Copyright (C) 2001 OHASHI Akira <bg66@koka-in.org>
 
-;; Authors: NAKAJIMA Mikio  <minakaji@osaka.email.ne.jp>
+;; Author: OHASHI Akira <bg66@koka-in.org>
 ;; Keywords: news
 
 ;; This file is a part of shimbun.
@@ -29,41 +29,46 @@
 (require 'shimbun)
 (require 'sb-mhonarc)
 
-(luna-define-class shimbun-kde (shimbun-mhonarc) ())
+(luna-define-class shimbun-debian-jp (shimbun-mhonarc) ())
 
-(defvar shimbun-kde-url "http://www.KDE.gr.jp/ml/")
-(defvar shimbun-kde-groups '("Kdeveloper" "Kuser"))
-(defvar shimbun-kde-coding-system 'euc-jp)
-(defvar shimbun-kde-reverse-flag t)
-(defvar shimbun-kde-litemplate-regexp
-  "<STRONG><A NAME=\"\\([0-9]+\\)\" href=\"\\(msg[0-9]+.html\\)\">\\([^<]+\\)</A></STRONG> <EM>\\([^<]+\\)</EM>")
+(defvar shimbun-debian-jp-url "http://lists.debian.or.jp/")
+(defvar shimbun-debian-jp-groups
+  '("debian-announce" "debian-devel" "debian-doc"
+    "debian-www" "debian-users" "jp-policy" "jp-qa"))
+(defvar shimbun-debian-jp-coding-system 'iso-2022-jp)
+(defvar shimbun-debian-jp-reverse-flag nil)
+(defvar shimbun-debian-jp-litemplate-regexp
+  "<STRONG><A NAME=\"\\([0-9]+\\)\" HREF=\"\\(msg[0-9]+.html\\)\">\\([^<]+\\)</A></STRONG> <EM>\\([^<]+\\)</EM>")
+(defvar shimbun-debian-jp-x-face-alist
+  '(("default" . "X-Face: ]SX>@::/@(;bIJSLp?tu'vm&{Q=(T1L_wI)+bH6EY$^PkY|:Fa4VBhLG#EtcZ.#F==O~-vk
+ !A2|wMxaLC|=iA#V$[r(C..3&<fJ-B|E2&SKUivW[C%BXG8AGcfZ5YN8W`r")))
 
-(luna-define-method shimbun-index-url ((shimbun shimbun-kde))
+(luna-define-method shimbun-index-url ((shimbun shimbun-debian-jp))
   (concat (shimbun-url-internal shimbun)
 	  (shimbun-current-group-internal shimbun) "/"))
 
-(luna-define-method shimbun-get-headers ((shimbun shimbun-kde)
+(luna-define-method shimbun-reply-to ((shimbun shimbun-debian-jp))
+  (concat (shimbun-current-group-internal shimbun) "@debian.or.jp"))
+
+(luna-define-method shimbun-get-headers ((shimbun shimbun-debian-jp)
 					 &optional range)
   (let ((case-fold-search t)
 	(pages (shimbun-header-index-pages range))
 	(count 0)
-	(months '("index.html"))
-	headers)
-    (shimbun-mhonarc-reverse-flag-internal shimbun)
+	headers months)
     (goto-char (point-min))
-    (when pages (incf count))
     (while (and (if pages (<= (incf count) pages) t)
-		(re-search-forward "\\[Prev Page\\]\\[<a href=\"\\(.+\\.html\\)\">Next Page</a>\\]" nil t)
+		(re-search-forward "<A HREF=\"\\([0-9]+\\)/\">" nil t)
 		(push (match-string 1) months)))
     (setq months (nreverse months))
     (erase-buffer)
     (catch 'stop
       (dolist (month months)
-	(let ((url (concat (shimbun-index-url shimbun) month)))
+	(let ((url (concat (shimbun-index-url shimbun) month "/")))
 	  (shimbun-retrieve-url url t)
 	  (shimbun-mhonarc-get-headers shimbun url headers month))))
     headers))
 
-(provide 'sb-kde)
+(provide 'sb-debian-jp)
 
-;;; sb-kde.el ends here
+;;; sb-debian-jp.el ends here
