@@ -187,7 +187,7 @@ whose elements are:
 
 (defun w3m-antenna-shutdown ()
   (when w3m-antenna-alist
-    (w3m-save-list w3m-antenna-file w3m-antenna-alist)
+    (w3m-save-list w3m-antenna-file w3m-antenna-alist nil t)
     (setq w3m-antenna-alist nil)))
 
 (defun w3m-antenna-hns-last-modified (url &optional no-cache)
@@ -223,6 +223,10 @@ whose elements are:
     (if (w3m-content-type url no-cache)
 	(w3m-last-modified url)
       t))) ; t means that specified URL is not found.
+
+;; To avoid byte-compile warning.
+(eval-and-compile
+  (autoload 'w3m-filter "w3m-filter"))
 
 (defun w3m-antenna-size (url class &optional no-cache)
   (unless (memq class '(hns time))

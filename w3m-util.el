@@ -1,6 +1,6 @@
 ;;; w3m-util.el --- Utility macros and functions for emacs-w3m
 
-;; Copyright (C) 2001 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
+;; Copyright (C) 2001, 2002 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Authors: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
 ;;          Shun-ichi GOTO     <gotoh@taiyo.co.jp>,
@@ -44,11 +44,14 @@
   (defvar w3m-current-url)
   (defvar w3m-current-title)
   (defvar w3m-html-string-regexp)
-  (defvar w3m-work-buffer-list))
+  (defvar w3m-work-buffer-list)
+  (defvar w3m-current-refresh)
+  (defvar w3m-refresh-timer)
+  (defvar w3m-use-refresh))
 
 (eval-and-compile
-  (eval
-   '(condition-case nil
+  (dont-compile
+    (condition-case nil
 	:symbol-for-testing-whether-colon-keyword-is-available-or-not
       (void-variable
        (let (w3m-colon-keywords)
@@ -64,6 +67,11 @@
 	(< emacs-major-version 20))
     (require 'poe)
     (require 'poem))))
+
+(eval-and-compile
+  (cond ((and (boundp 'emacs-major-version)
+	      (= emacs-major-version 19))
+	 (autoload 'cancel-timer "timer"))))
 
 ;;; Things should be defined in advance:
 
@@ -113,7 +121,7 @@ or `debug-on-quit' is non-nil."
 ;;; Text props:
 
 (defmacro w3m-add-text-properties (start end props &optional object)
-  "Like `add-text-properties' but always add the non-sticky properties."
+  "Like `add-text-properties' but always add non-sticky properties."
   (let ((non-stickies
 	 (if (featurep 'xemacs)
 	     ;; Default to start-closed and end-open in XEmacsen.
@@ -146,11 +154,10 @@ cursor position and around there."
 (defmacro w3m-submit (&optional position)
   (` (w3m-get-text-property-around 'w3m-submit (, position))))
 
-(defmacro w3m-cursor-anchor (&optional position)
+(defmacro w3m-anchor-sequence (&optional position)
   (if position
-      (` (get-text-property (, position) 'w3m-cursor-anchor))
-    (` (get-text-property (point) 'w3m-cursor-anchor))))
-
+      (` (get-text-property (, position) 'w3m-anchor-sequence))
+    (` (get-text-property (point) 'w3m-anchor-sequence))))
 
 ;;; Attributes:
 
@@ -225,6 +232,8 @@ cursor position and around there."
   "Kill the buffer BUFFER and remove it from `w3m-work-buffer-list'.
 The argument may be a buffer or may be the name of a buffer.
 An argument of nil means kill the current buffer."
+  (unless buffer
+    (setq buffer (current-buffer)))
   (when (stringp buffer)
     (setq buffer (get-buffer buffer)))
   (when (buffer-live-p buffer)
@@ -306,30 +315,183 @@ nil, it is regarded as the oldest time."
 	       (and (= (car a) (car b))
 		    (> (nth 1 a) (nth 1 b)))))))
 
+(defsubst w3m-time-lapse-seconds (start end)
+  "Return lapse seconds from START to END.
+START and END are lists which represent time in Emacs-style."
+  (+ (* (- (car end) (car start)) 65536)
+     (cadr end)
+     (- (cadr start))))
+
 (defsubst w3m-url-dtree-p (url)
   "If URL points a 'w3m-dtree', return non-nil value.  Otherwise return
 nil."
-  (string-match "^about://dtree/" url))
+  (string-match "\\`about://dtree/" url))
 
 (defsubst w3m-url-local-p (url)
   "If URL points a file on the local system, return non-nil value.
 Otherwise return nil."
-  (string-match "^\\(file:\\|/\\)" url))
+  (string-match "^\\(file:\\|/\\|[a-zA-Z]:/\\)" url))
+
+(defconst w3m-url-authinfo-regexp
+  "\\`\\([^:/?#]+:\\)?//\\([^/?#:]+\\)\\(:\\([^/?#@]+\\)\\)?@"
+  "Regular expression for parsing the authentication part of a URI reference")
+
+(defsubst w3m-url-authinfo (url)
+  "Return a user name and a password to authenticate URL."
+  (when (string-match w3m-url-authinfo-regexp url)
+    (cons (match-string 2 url)
+	  (match-string 4 url))))
+
+(defsubst w3m-url-strip-authinfo (url)
+  "Remove the authentication part from the URL."
+  (if (string-match w3m-url-authinfo-regexp url)
+      (concat (match-string 1 url)
+	      "//"
+	      (substring url (match-end 0)))
+    url))
+
+(defsubst w3m-url-strip-fragment (url)
+  "Remove the fragment identifier from the URL."
+  (if (string-match "\\`\\([^#]*\\)#" url)
+      (match-string 1 url)
+    url))
+
+(defsubst w3m-url-strip-query (url)
+  "Remove the query part and the fragment identifier from the URL."
+  (if (string-match "\\`\\([^?#]*\\)[?#]" url)
+      (match-string 1 url)
+    url))
 
 (defsubst w3m-which-command (command)
-  (if (and (file-name-absolute-p command)
-	   (file-executable-p command))
-      command
-    (setq command (file-name-nondirectory command))
-    (catch 'found-command
-      (let (bin)
-	(dolist (dir exec-path)
-	  (when (or (file-executable-p
-		     (setq bin (expand-file-name command dir)))
-		    (file-executable-p
-		     (setq bin (expand-file-name (concat command ".exe") dir))))
-	    (throw 'found-command bin)))))))
+  (when (stringp command)
+    (if (and (file-name-absolute-p command)
+	     (file-executable-p command))
+	command
+      (setq command (file-name-nondirectory command))
+      (catch 'found-command
+	(let (bin)
+	  (dolist (dir exec-path)
+	    (when (or (file-executable-p
+		       (setq bin (expand-file-name command dir)))
+		      (file-executable-p
+		       (setq bin (expand-file-name (concat command ".exe") dir))))
+	      (throw 'found-command bin))))))))
 
+(defun w3m-cancel-refresh-timer (&optional buffer)
+  "Cancel the timer for REFRESH attribute in META tag."
+  (when w3m-use-refresh
+    (with-current-buffer (or buffer (current-buffer))
+      (setq w3m-current-refresh nil)
+      (when w3m-refresh-timer
+	(cancel-timer w3m-refresh-timer)
+	(setq w3m-refresh-timer nil)))))
+
+(defalias 'w3m-truncate-string
+  (if (featurep 'xemacs)
+      (lambda (str end-column)
+	"Truncate string STR to end at column END-COLUMN."
+	(let ((len (length str))
+	      (column 0)
+	      (idx 0))
+	  (condition-case nil
+	      (while (< column end-column)
+		(setq column (+ column (char-width (aref str idx)))
+		      idx (1+ idx)))
+	  (args-out-of-range (setq idx len)))
+	  (when (> column end-column)
+	    (setq idx (1- idx)))
+	  (substring str 0 idx)))
+    'truncate-string))
+
+(defsubst w3m-assoc-ignore-case (name alist)
+  "Return the element of ALIST whose car equals NAME ignoring its case."
+  (let ((dname (downcase name))
+	match)
+    (while alist
+      (when (and (consp (car alist))
+		 (string= dname (downcase (car (car alist)))))
+	(setq match (car alist)
+	      alist nil))
+      (setq alist (cdr alist)))
+    match))
+
+(defun w3m-prin1 (object &optional stream)
+  "Like `prin1', except that control chars will be represented with ^ as
+`cat -v' does."
+  (if (stringp object)
+      (let (rest)
+	(dolist (char (append object nil) rest)
+	  (cond ((eq char ?\C-?)
+		 (push "^?" rest))
+		((or (memq char '(?\t ?\n))
+		     (>= char ?\ ))
+		 (push (char-to-string char) rest))
+		(t
+		 (push (concat "^" (char-to-string (+ 64 char))) rest))))
+	(prin1 (apply 'concat (nreverse rest)) stream))
+    (prin1 object stream)))
+
+(defmacro w3m-display-message (string &rest args)
+  "Like `message', except that message logging is disabled."
+  (if (featurep 'xemacs)
+      (if args
+	  `(display-message 'no-log (format ,string ,@args))
+	`(display-message 'no-log ,string))
+    `(let (message-log-max)
+       (message ,string ,@args))))
+
+(if (featurep 'xemacs)
+    (defalias 'w3m-function-max-args 'function-max-args)
+  (eval-and-compile
+    (require 'advice))
+  (defun w3m-function-max-args (function)
+    "Return the maximum number of arguments a function may be called with.
+The function may be any form that can be passed to `funcall',
+any special form, or any macro.
+If the function takes an arbitrary number of arguments or is
+a built-in special form, nil is returned."
+    (let ((arglist (ad-arglist (if (symbolp function)
+				   (symbol-function function)
+				 function))))
+      (if (memq '&rest arglist)
+	  nil
+	(length (delq '&optional arglist))))))
+
+(defun w3m-modify-plist (plist &rest properties)
+  "Change values in PLIST corresponding to PROPERTIES.  This is similar
+to `plist-put', but handles plural symbol and value pairs and remove
+pairs from PLIST whose value is nil."
+  (while properties
+    (setq plist (plist-put plist (car properties) (cadr properties))
+	  properties (cddr properties)))
+  (while plist
+    (if (cadr plist)
+	(setq properties (nconc properties (list (car plist) (cadr plist)))))
+    (setq plist (cddr plist)))
+  properties)
+
+(defmacro w3m-insert-string (string)
+  "Insert STRING at point without conversions in either case the
+multibyteness of the buffer."
+  (if (and (fboundp 'string-as-multibyte)
+	   (subrp (symbol-function 'string-as-multibyte)))
+      `(let ((string ,string))
+	 (insert (if enable-multibyte-characters
+		     (string-as-multibyte string)
+		   (string-as-unibyte string))))
+    `(insert ,string)))
+
+(defconst w3m-default-face-colors
+  (eval '(if (not (or (featurep 'xemacs)
+		      (>= emacs-major-version 21)))
+	     (let ((bg (face-background 'default))
+		   (fg (face-foreground 'default)))
+	       (append (if bg `(:background ,bg))
+		       (if fg `(:foreground ,fg))))))
+  "The initial `default' face color spec.  Since `defface' under FSF Emacs
+versions prior to 21 won't inherit the `dafault' face colors by default,
+we will use this value for the default `defface' color spec.")
 
 (provide 'w3m-util)
+
 ;;; w3m-util.el ends here
