@@ -1,12 +1,13 @@
 ;;; shimbun.el --- interfacing with web newspapers
 
+;; Copyright (C) 2001 Yuuichi Teranishi <teranisi@gohome.org>
+
 ;; Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
 ;;         Akihiro Arisawa    <ari@mbf.sphere.ne.jp>,
 ;;         Yuuichi Teranishi  <teranisi@gohome.org>
-
 ;; Keywords: news
 
-;;; Copyright:
+;; This file is the main part of shimbun.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -114,20 +115,25 @@
 Return content-type of URL as string when retrieval succeeded."
   (let (type)
     (when (and url (setq type (w3m-retrieve url no-decode no-cache)))
-      (unless no-decode
-	(w3m-decode-buffer url))
-      type)))
+      (w3m-with-work-buffer
+	(unless no-decode
+	  (w3m-decode-buffer url)))
+      (unless (eq (current-buffer)
+		  (get-buffer w3m-work-buffer-name))
+	(when no-decode
+	  (set-buffer-multibyte nil))
+	(insert-buffer w3m-work-buffer-name)))
+    type))
 
 (defun shimbun-retrieve-url-buffer (url &optional no-cache no-decode)
   "Return a buffer which contains the URL contents."
-  (with-current-buffer (get-buffer-create " *shimbun-work*")
-    (erase-buffer)
-    (if (and url (w3m-retrieve url no-decode no-cache))
-	(inline
-	  (unless no-decode
-	    (w3m-decode-buffer url))
-	  (current-buffer))
-      (delete-region (point-min) (point-max))
+  (if (and url (w3m-retrieve url no-decode no-cache))
+      (w3m-with-work-buffer
+	(unless no-decode
+	  (w3m-decode-buffer url))
+	(current-buffer))
+    (with-current-buffer (get-buffer w3m-work-buffer-name)
+      (erase-buffer)
       (current-buffer))))
 
 (defalias 'shimbun-content-type 'w3m-content-type)
@@ -549,4 +555,5 @@ is enclosed by at least one regexp grouping construct."
       (replace-match "" t t))))
 
 (provide 'shimbun)
+
 ;;; shimbun.el ends here.
