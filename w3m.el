@@ -134,7 +134,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.495.2.8 $"))
+    (let ((rev "$Revision: 1.495.2.9 $"))
       (and (string-match "\\.\\([0-9]+\\) \$$" rev)
 	   (format "1.3pre%d"
 		   (string-to-number (match-string 1 rev))))))
@@ -1513,6 +1513,10 @@ which defaults to the value of `w3m-file-coding-system-for-read'."
   (unless w3m-arrived-db
     (setq w3m-arrived-db (make-vector w3m-arrived-db-size nil))
     (let ((list (w3m-load-list w3m-arrived-file)))
+      (when (stringp (car list))
+	;; When arrived URL database is too old, its data is ignored.
+	(setq list nil)
+	(delete-file w3m-arrived-file))
       (dolist (elem list)
 	(if (or (not (nth 1 elem)) (stringp (nth 1 elem)))
 	    ;; Process new format of arrived URL database.
