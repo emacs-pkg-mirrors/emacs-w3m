@@ -1,4 +1,4 @@
-$Date: 2001-03-01 07:45:01 $
+$Date: 2001-03-01 08:18:14 $
 
 ■ TODO
    --> form 対応
@@ -21,6 +21,10 @@ $Date: 2001-03-01 07:45:01 $
 
    --> w3m-fontify で _id というタグが処理されていない
        Ex) http://www.debian.or.jp/License.html
+
+   --> http://www.lib.i.kyoto-u.ac.jp/ のレンダリングが崩れる。どうも 
+       \200 という文字が悪さをしているようだが、どう処理すべきなのか、良
+       く分からない。
 
 
 Local Variables:
