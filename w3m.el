@@ -134,7 +134,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.495.2.3 $"))
+    (let ((rev "$Revision: 1.495.2.4 $"))
       (and (string-match "\\.\\([0-9]+\\) \$$" rev)
 	   (format "1.2.%d"
 		   (- (string-to-number (match-string 1 rev)) 426)))))
@@ -160,9 +160,10 @@
 	(call-process command nil t nil "-version")
 	(goto-char (point-min))
 	(cond
-	 ((looking-at "version w3m/0\\.2\\.1-inu") 'w3m)
-	 ((looking-at "version w3m/0\\.2\\.1\\+mee") 'w3mmee)
-	 ((looking-at "version w3m/0\\.2\\.1-m17n") 'w3m-m17n)))))
+	 ((looking-at "version w3m/0\\.2\\.[12]-inu") 'w3m)
+	 ((looking-at "version w3m/0\\.2\\.[12]\\+mee") 'w3mmee)
+	 ((looking-at "version w3m/0\\.2\\.[12]-m17n") 'w3m-m17n)
+	 ((looking-at "version w3m/0\\.2\\.2$") 'w3m)))))
   "*Type of w3m."
   :group 'w3m
   :type '(choice (const :tag "w3m" 'w3m)
