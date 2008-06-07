@@ -28,38 +28,28 @@
 (luna-define-class shimbun-debugmagazin-de (shimbun-rss) ())
 
 (defvar shimbun-debugmagazin-de-group-url-regexp
-  '(("frontpage" "http://feeds.feedburner.com/DebugAllInOne"
-     ".*/\\(.*\\)\\.html")
-    ("musik" "http://www.de-bug.de/musik/news.xml"
-     "musik/\\(.*\\)\\.html")
+  '(("news" "http://www.de-bug.de/news/news.xml"
+     "news/\\(.*\\)\\.html")
     ("reviews" "http://www.de-bug.de/reviews/reviews.xml"
      "reviews/\\(.*\\)\\.html")
-    ("magazin" "http://www.de-bug.de/mag/texte.xml"
-     "mag/\\(.*\\)\\.html")
-    ("medien" "http://feeds.feedburner.com/DebugMedien"
-     ".*/\\(.*\\)\\.html")
-    ("podcast" "http://feeds.feedburner.com/DebugPod"
-     ".*/\\(.*\\)\\.html")
+    ("texte" "http://www.de-bug.de/texte/texte.xml"
+     "texte/\\(.*\\)\\.html")
+    ("blog" "http://www.de-bug.de/blog/feed"
+     "blog/archives/\\(.*\\)\\.html")
+    ("podcast" "http://www.de-bug.de/pod/wp-rss2.php"
+     "pod/archives/\\(.*\\)\\.html")
     ("musiktechnik" "http://feeds.feedburner.com/de-bug/SSgQ"
-     ".*/\\(.*\\)\\.html")
-    ("screen" "http://feeds.feedburner.com/DebugScreen"
-     ".*/\\(.*\\)\\.html")
-    ("gadgets" "http://feeds.feedburner.com/DebugGadgets"
-     ".*/\\(.*\\)\\.html")
-    ("games" "http://feeds.feedburner.com/DebugGames"
-     ".*/\\(.*\\)\\.html")
-    ("mode" "http://feeds.feedburner.com/DebugMode"
-     ".*/\\(.*\\)\\.html")))
+     "de-bug/.*/.*/\\(.*\\)\\.html")
+    ("mode" "http://www.de-bug.de/fee/feed/"
+     "fee/archives/\\(.*\\)\\.html")))
 
 (defvar shimbun-debugmagazin-de-groups
   (mapcar 'car shimbun-debugmagazin-de-group-url-regexp))
 (defvar shimbun-debugmagazin-de-from-address "invalid@debugmagazin.de")
-
 (defvar shimbun-debugmagazin-de-content-start
-  "<div class=\"post\"\\( id=\"post-[0-9]+\"\\)?>")
-
+  "<div id=\"content\" class=\"narrowcolumn\">")
 (defvar shimbun-debugmagazin-de-content-end
-  "\\(?:You can start editing here\\|<h3 id=\"comments\">\\|DIE MASSE MEINT\\)")
+  "\\(?:You can start editing here\\|<h3 id=\"comments\">\\)")
 
 (defvar shimbun-debugmagazin-de-x-face-alist
   '(("default" . "\
