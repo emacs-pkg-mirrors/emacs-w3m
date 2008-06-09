@@ -4582,16 +4582,15 @@ variable and to put the expiry period for each group into the
 @code{auto-expire} group parameter to @code{t} and to set the expiry
 period with the @code{expiry-wait} group parameter in every
 @samp{nnshimbun} group which you want to expire automatically.  See
-@xref{Expiring Mail, ,Expiring Mail, gnus, The Gnus manual}, for more
-information.  In the group to which the @code{expiry-wait} group
-parameter is not specified, a default expiry period will be applied.}.
-Keep in mind that when an article is expired, it is not deleted from the
-remote server, it's still available there.  What is deleted is the line
-in your own @acronym{NOV} file for @samp{nnshimbun}@footnote{The
-@acronym{NOV} file for @samp{nnshimbun} is named something like
-``~/News/shimbun/asahi/national/.overview''.} corresponding to the
-article to be expired.  Then the article won't appear in the Summary
-buffer, forever and ever.
+@ref{(gnus)Expiring Mail} for more information.  In the group to which
+the @code{expiry-wait} group parameter is not specified, a default
+expiry period will be applied.}.  Keep in mind that when an article is
+expired, it is not deleted from the remote server, it's still available
+there.  What is deleted is the line in your own @acronym{NOV} file for
+@samp{nnshimbun}@footnote{The @acronym{NOV} file for @samp{nnshimbun} is
+named something like ``~/News/shimbun/asahi/national/.overview''.}
+corresponding to the article to be expired.  Then the article won't
+appear in the Summary buffer, forever and ever.
 
 If you don't expire articles in @samp{nnshimbun} groups, the
 @acronym{NOV} files will continue to grow fat indefinitely and you may
@@ -5196,10 +5195,9 @@ cnn-jp.business cnn-jp.fringe cnn-jp.science cnn-jp.showbiz
 cnn-jp.sports cnn-jp.top cnn-jp.usa cnn-jp.world
 
 @item @uref{http://www.de-bug.de/, De-Bug Magazine}
-debugmagazin-de.frontpage debugmagazin-de.musik debugmagazin-de.reviews
-debugmagazin-de.magazin debugmagazin-de.medien debugmagazin-de.podcast
-debugmagazin-de.musiktechnik debugmagazin-de.screen
-debugmagazin-de.gadgets debugmagazin-de.games debugmagazin-de.mode
+debugmagazin-de.news debugmagazin-de.reviews debugmagazin-de.texte
+debugmagazin-de.blog debugmagazin-de.podcast
+debugmagazin-de.musiktechnik debugmagazin-de.mode
 
 @item @uref{http://japanese.engadget.com/, Engadget Japanese}
 engadget-ja.top
