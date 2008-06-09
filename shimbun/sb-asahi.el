@@ -911,7 +911,7 @@ Each table is the same as the `cdr' of the element of
 `shimbun-asahi-group-table'.")
 
 (defvar shimbun-asahi-content-start
-  "<div[\t\n ]+class=\"\\(?:ThmbSet256\\|Kansai-ThmbSet100\\)\">\
+  "<div[\t\n ]+class=\"ThmbSet256\">\
 \\|<!--[\t\n ]*End of Headline[\t\n ]*-->\
 \\(?:[\t\n ]*<div[\t\n ]+[^<]+</div>[\t\n ]*\
 \\|[\t\n ]*<p[\t\n ]+[^<]+</p>[\t\n ]*\\)?\
@@ -919,8 +919,9 @@ Each table is the same as the `cdr' of the element of
 \\|<!--[\t\n ]*FJZONE START NAME=\"HONBUN\"[\t\n ]*-->")
 
 (defvar shimbun-asahi-content-end
-  "\\(?:<dl[\t\n ]+class=\"PrInfo\">\\|<!-[^>]+ここまで[\t\n ]*-+>\\)\
+  "<ul[\t\n ]+class=\"FollowLnk[\t\n ]+mb18\">\
 \\|\\(?:[\t\n ]*<[^>]+>\\)*[\t\n ]*<!--[\t\n ]*Start of hatenab[\t\n ]*-->\
+\\|<!--[\t\n ]*\\(?:google_ad_section\\|[AD★☆]+\\)\
 \\|<!--[\t\n ]*End of Kiji[\t\n ]*-->\
 \\|<!--[\t\n ]*End of related link[\t\n ]*-->\
 \\|<!--[\t\n ]*FJZONE END NAME=\"HONBUN\"[\t\n ]*-->")
@@ -1486,8 +1487,7 @@ that day if it failed."
        (delete-region (match-beginning 0) (match-end 0)))
      (goto-char (point-min))
      (while (re-search-forward "[\t\n ]*\\(?:<[^>]+>[\t\n ]*\\)+\
-アサヒ・コムトップ[へヘ]\
-\\(?:\\(?:[\t\n ]*<[!/][^>]+>\\)+[\t\n ]*\\|[\t\n ]*\\'\\)"
+アサヒ・コムトップ[へヘ]\\(?:\\(?:[\t\n ]*<[^>]+>\\)+[\t\n ]*\\|[\t\n ]*\\'\\)"
 			       nil t)
        (replace-match "\n"))
      ;; Remove trailing garbage.

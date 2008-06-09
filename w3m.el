@@ -176,7 +176,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1371 $"))
+    (let ((rev "$Revision: 1.1369 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -1287,11 +1287,6 @@ The term `shifting' means a fine level scrolling."
   :group 'w3m
   :type 'boolean
   :require 'w3m-form)
-
-(defcustom w3m-submit-form-safety-check nil
-  "Non-nil means ask you for confirmation when submitting a form."
-  :group 'w3m
-  :type 'boolean)
 
 (defcustom w3m-use-cookies nil
   "*Non-nil means enable emacs-w3m to use cookies.  (EXPERIMENTAL)"
@@ -6420,10 +6415,7 @@ command instead."
   (let ((submit (w3m-submit)))
     (if (and submit
 	     w3m-current-url
-	     (w3m-url-valid w3m-current-url)
-	     (if w3m-submit-form-safety-check
-		 (y-or-n-p "Submit? ")
-	       t))
+	     (w3m-url-valid w3m-current-url))
 	(let ((w3m-form-new-session new-session)
 	      (w3m-form-download nil))
 	  (eval submit))
@@ -8021,11 +8013,10 @@ Otherwise, it defaults to `w3m-horizontal-shift-columns'."
 	     (not (and (eq last-command this-command)
 		       (or (eq (point) (point-min))
 			   (eq (point) (point-max)))))
-	     (or (string-match "\\`i?search-" (symbol-name this-command))
-		 (and (markerp (nth 1 w3m-current-position))
-		      (markerp (nth 2 w3m-current-position))
-		      (>= (point) (marker-position (nth 1 w3m-current-position)))
-		      (<= (point) (marker-position (nth 2 w3m-current-position))))))
+	     (markerp (nth 1 w3m-current-position))
+	     (markerp (nth 2 w3m-current-position))
+	     (>= (point) (marker-position (nth 1 w3m-current-position)))
+	     (<= (point) (marker-position (nth 2 w3m-current-position))))
     (w3m-horizontal-on-screen))
   (setq w3m-horizontal-scroll-done nil))
 
