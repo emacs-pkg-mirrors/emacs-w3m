@@ -1019,9 +1019,10 @@ the region active."
 	 (setq zmacs-region-stays t))))
 
 (defmacro w3m-deactivate-region ()
-  "Deactivate the region."
-  (if (featurep 'xemacs)
-      '(zmacs-deactivate-region)
+  "Deactivate the region.
+This macro does nothing in XEmacs, because the region is always
+deactivated after evaluating the current command."
+  (unless (featurep 'xemacs)
     '(deactivate-mark)))
 
 (defmacro w3m-region-active-p ()
