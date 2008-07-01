@@ -217,7 +217,7 @@ Every `.' in NAME will be replaced with `/'."
        1 nil 2 6 3 4 5)
       ("digital" "デジタル" "%s/list.html"
        ,@(shimbun-asahi-make-regexp "digital/[^\"/]+"))
-      ("editorial" "社説" "paper/editorial.html"
+      ("editorial" "社説" "include/editorial_bno4.xml"
        ,(concat
 	 "<a" s1 "href=\"\\./"
 	 ;; 1. url
@@ -277,7 +277,7 @@ Every `.' in NAME will be replaced with `/'."
       ("sports.rugby" "ラグビー")
       ("sports.usa" "米プロスポーツ")
       ("sports.winter" "ウインタースポーツ")
-      ("tenjin" "天声人語" "paper/column.html"
+      ("tenjin" "天声人語" "include/column_bno4.xml"
        ,(concat
 	 "<a" s1 "href=\"\\./"
 	 ;; 1. url
@@ -919,21 +919,27 @@ Each table is the same as the `cdr' of the element of
 \\|<!--[\t\n ]*FJZONE START NAME=\"HONBUN\"[\t\n ]*-->")
 
 (defvar shimbun-asahi-content-end
-  "\\(?:<dl[\t\n ]+class=\"PrInfo\">\\|<!-[^>]+ここまで[\t\n ]*-+>\\)\
+  "<dl[\t\n ]+class=\"PrInfo\">\
+\\|<!--[\t\n ]*google_ad_section_end\
+\\|<!-[^>]+ここまで[\t\n ]*-+>\
 \\|\\(?:[\t\n ]*<[^>]+>\\)*[\t\n ]*<!--[\t\n ]*Start of hatenab[\t\n ]*-->\
 \\|<!--[\t\n ]*End of Kiji[\t\n ]*-->\
 \\|<!--[\t\n ]*End of related link[\t\n ]*-->\
 \\|<!--[\t\n ]*FJZONE END NAME=\"HONBUN\"[\t\n ]*-->")
 
 (defvar shimbun-asahi-text-content-start
-  "<!--[\t\n ]*End of Headline[\t\n ]*-->\
+  "<div[\t\n ]+class=\"\\(?:ThmbSet256\\|Kansai-ThmbSet100\\)\">\
+\\|<!--[\t\n ]*End of Headline[\t\n ]*-->\
 \\(?:[\t\n ]*<div[\t\n ]+[^<]+</div>[\t\n ]*\
 \\|[\t\n ]*<p[\t\n ]+[^<]+</p>[\t\n ]*\\)?\
 \\|<!--[\t\n ]*Start of Kiji[\t\n ]*-->\
 \\|<!--[\t\n ]*FJZONE START NAME=\"HONBUN\"[\t\n ]*-->")
 
 (defvar shimbun-asahi-text-content-end
-  "\\(?:[\t\n ]*<[^>]+>\\)*[\t\n ]*<!--[\t\n ]*Start of hatenab[\t\n ]*-->\
+  "<dl[\t\n ]+class=\"PrInfo\">\
+\\|<!--[\t\n ]*google_ad_section_end\
+\\|<!-[^>]+ここまで[\t\n ]*-+>\
+\\|\\(?:[\t\n ]*<[^>]+>\\)*[\t\n ]*<!--[\t\n ]*Start of hatenab[\t\n ]*-->\
 \\|<!--[\t\n ]*\\(?:google_ad_section\\|[AD★☆]+\\)\
 \\|<!--[\t\n ]*End of Kiji[\t\n ]*-->\
 \\|<!--[\t\n ]*FJZONE END NAME=\"HONBUN\"[\t\n ]*-->")
@@ -1178,22 +1184,27 @@ It works for only the groups `editorial' and `tenjin'."
   (goto-char (point-min))
   (let ((basename (cdr (assoc group '(("editorial" . "editorial")
 				      ("tenjin" . "column")))))
-	year month day url)
+	year cmonth month day url)
     (when (and basename
 	       (re-search-forward
-		(concat
-		 ;; 1. year
-		 "\\(20[0-9][0-9]\\)" "年"
-		 ;; 2. month
-		 "\\([01]?[0-9]\\)" "月"
-		 ;; 3. day
-		 "\\([0-3]?[0-9]\\)" "日"
-		 "（.曜日）付")
+		(eval-when-compile
+		  (concat
+		   "/\\(?:editorial\\|column\\)\\.html\"[^\n]+"
+		   ;; 1. month
+		   "\\([01]?[0-9]\\)" "月"
+		   ;; 2. day
+		   "\\([0-3]?[0-9]\\)" "日付"))
 		nil t))
-      (setq year (string-to-number (match-string 1))
-	    month (string-to-number (match-string 2))
-	    day (string-to-number (match-string 3))
-	    url (format "paper/%s%d%02d%02d.html" basename year month day))
+      (setq year (shimbun-decode-time nil 32400)
+	    cmonth (nth 4 year)
+	    year (nth 5 year)
+	    month (string-to-number (match-string 1))
+	    day (string-to-number (match-string 2)))
+      (cond ((and (= cmonth 1) (= month 12))
+	     (decf year))
+	    ((and (= cmonth 12) (= month 1))
+	     (incf year)))
+      (setq url (format "paper/%s%d%02d%02d.html" basename year month day))
       (list
        (shimbun-make-header
 	;; number
@@ -1251,29 +1262,29 @@ that day if it failed."
      ((string-equal group "editorial")
       (let ((url (shimbun-header-xref header))
 	    (retry 0)
-	    start end)
+	    start)
 	(while retry
 	  (if (progn
 		(while (and (re-search-forward "\
-<\\(h[0-9]+\\)[\t\n ]+\\(?:[^\t\n >]+[\t\n ]+\\)*class=\"topi\""
+<\\(h[0-9]+\\)[\t\n ]+\\(?:[^\t\n >]+[\t\n ]+\\)*class=\"bdr_btm_2px"
 					       nil t)
-			    (shimbun-end-of-tag (match-string 1))
-			    (progn
-			      (delete-region (match-end 2) (match-end 0))
-			      (if end
-				  (progn
-				    (goto-char end)
-				    (delete-region end (match-beginning 2))
-				    (insert "</p>\n&#012;\n"))
-				(unless start
-				  (setq start (match-beginning 0)))
-				(delete-region start (match-beginning 2)))
-			      (re-search-forward "\
-<div[\t\n ]+\\(?:[^\t\n >]+[\t\n ]+\\)*class=\"kiji\""
-						 nil t))
-			    (setq end (shimbun-end-of-tag "div"))))
-		end)
+			    (shimbun-end-of-tag (match-string 1) t)
+			    (if start
+				(progn
+				  (delete-region
+				   (goto-char (match-beginning 0))
+				   (match-beginning 1))
+				  (insert "\n&#012;\n")
+				  (forward-char 1))
+			      (setq start (match-beginning 1)))))
+		(and start
+		     (re-search-forward "[\t\n ]*\
+\\(?:<ul[\t\n ]+\\(?:[^\t\n >]+[\t\n ]+\\)*class=\"FollowLnk\
+\\|<li[\t\n ]+\\(?:[^\t\n >]+[\t\n ]+\\)*class=\"TopLnk\"\
+\\|<dl[\t\n ]+\\(?:[^\t\n >]+[\t\n ]+\\)*class=\"PrInfo\"\\)"
+					nil t)))
 	      (progn
+		(goto-char (match-beginning 0))
 		(setq retry nil)
 		(insert "\n<!-- End of Kiji -->")
 		(goto-char start)
@@ -1285,8 +1296,9 @@ that day if it failed."
 	    (erase-buffer)
 	    (if (= retry 1)
 		(setq retry nil)
-	      (setq retry 1
-		    url (shimbun-index-url shimbun))
+	      (setq url "http://www.asahi.com/paper/editorial.html"
+		    retry 1
+		    start nil)
 	      (shimbun-header-set-xref header url)
 	      (shimbun-fetch-url shimbun url)
 	      (goto-char (point-min)))))))
@@ -1313,19 +1325,22 @@ that day if it failed."
      ((string-equal group "rss"))
      ((string-equal group "tenjin")
       (let ((url (shimbun-header-xref header))
-	    (retry 0))
+	    (retry 0)
+	    start)
 	(while retry
-	  (if (and
-	       (re-search-forward
-		"<div[\t\n ]+\\(?:[^\t\n >]+[\t\n ]+\\)*class=\"kiji\""
-		nil t)
-	       (shimbun-end-of-tag "div"))
+	  (if (and (re-search-forward "\
+<p>20[0-9][0-9]年[01]?[0-9]月[0-3]?[0-9]日（[日月火水木金土]）付</p>\
+\\(\\(?:[\t\n ]*印刷\\)?[\t\n ]*<[^>]+>\\)+[\t\n ]*"
+				      nil t)
+		   (progn
+		     (setq start (match-end 0))
+		     (re-search-forward "[\t\n ]*</p>" nil t)))
 	      (save-restriction
-		(narrow-to-region (match-beginning 0) (match-end 0))
+		(narrow-to-region start (goto-char (match-beginning 0)))
 		(setq retry nil)
-		(insert "\n<!-- End of Kiji -->")
-		(goto-char (match-beginning 0))
-		(insert "<!-- Start of Kiji -->")
+		(insert "</p>\n<!-- End of Kiji -->")
+		(goto-char start)
+		(insert "<!-- Start of Kiji --><p>")
 		(when (string-match "/column\\.html\\'" url)
 		  (insert "\
 \n<p>(指定された&nbsp;url&nbsp;が&nbsp;まだ/すでに&nbsp;無いので、\
@@ -1343,8 +1358,9 @@ that day if it failed."
 	    (erase-buffer)
 	    (if (= retry 1)
 		(setq retry nil)
-	      (setq retry 1
-		    url (shimbun-index-url shimbun))
+	      (setq url "http://www.asahi.com/paper/column.html"
+		    retry 1
+		    start nil)
 	      (shimbun-header-set-xref header url)
 	      (shimbun-fetch-url shimbun url)
 	      (goto-char (point-min)))))))
@@ -1474,6 +1490,22 @@ that day if it failed."
 \\(\\(?:<![^>]+>\\|<br>\\)[\t\n 　]*\\)*<p>"
 			       nil t)
        (replace-match "\\1\n<p>"))
+     ;; Add line breaks after images that captions or images follow.
+     (goto-char (point-min))
+     (while (re-search-forward
+	     "\\(<img[\t\n ]+[^>]+>\\(?:[\t\n ]*</[^>]+>\\)*\\)[\t\n ]*"
+	     nil t)
+       (when (or (save-match-data
+		   (looking-at "\\(?:<[^\t\n >]+>[\t\n ]*\\)*<img[\t\n ]"))
+		 (not (eq (char-after) ?<)))
+	 (replace-match "\\1<br>\n")))
+     ;; Add line breaks before images that follow captions.
+     (goto-char (point-min))
+     (while (re-search-forward
+	     "[\t\n ]*\\(\\(?:<[^/>][^>]*>[\t\n ]*\\)*<img[\t\n ]\\)"
+	     nil t)
+       (unless (eq (char-before (match-beginning 0)) ?>)
+	 (replace-match "<br>\n\\1")))
      ;; Remove any other useless things.
      (shimbun-remove-tags "[\t\n ]*<form[\t\n ]+" "</form>[\t\n ]*")
      (shimbun-remove-tags "[\t\n ]*<noscript>" "</noscript>[\t\n ]*")
@@ -1486,7 +1518,7 @@ that day if it failed."
        (delete-region (match-beginning 0) (match-end 0)))
      (goto-char (point-min))
      (while (re-search-forward "[\t\n ]*\\(?:<[^>]+>[\t\n ]*\\)+\
-アサヒ・コムトップ[へヘ]\
+\\(?:アサヒ・コム\\|ニュース\\)トップ[へヘ]\
 \\(?:\\(?:[\t\n ]*<[!/][^>]+>\\)+[\t\n ]*\\|[\t\n ]*\\'\\)"
 			       nil t)
        (replace-match "\n"))
