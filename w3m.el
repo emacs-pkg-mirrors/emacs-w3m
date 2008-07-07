@@ -176,7 +176,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1378 $"))
+    (let ((rev "$Revision: 1.1375 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -454,19 +454,6 @@ to set this variable properly."
   :group 'w3m
   :type '(radio (const :tag "Auto Detect" nil)
 		(integer :format "Specify Pixels: %v\n" :size 0)))
-
-(defcustom w3m-image-default-background nil
-  "Color name used as transparent color of image.
-Nil means to use the background color of the Emacs frame.  The
-null string \"\" is special, that will be replaced with the
-background color of the buffer. Note that this value is effective
-only with Emacs 22 and greater."
-  :group 'w3m
-  :type '(radio (string :format "Color: %v\n" :size 0
-			:match (lambda (widget value)
-				 (and (stringp value) (> (length value) 0))))
-		(const :tag "Use the background color of the Emacs frame" nil)
-		(const :tag "Null string" "")))
 
 (defvar w3m-accept-japanese-characters
   (and (not noninteractive)
@@ -9237,9 +9224,7 @@ non-ASCII characters."
   (interactive "p")
   (if w3m-current-url
       (let ((w3m-prefer-cache t)
-	    (w3m-view-source-decode-level (if (numberp arg) arg 0))
-	    (w3m-history-reuse-history-elements t))
-	(w3m-history-store-position)
+	    (w3m-view-source-decode-level (if (numberp arg) arg 0)))
 	(cond
 	 ((string-match "\\`about://source/" w3m-current-url)
 	  (w3m-goto-url (substring w3m-current-url (match-end 0))))
@@ -9247,8 +9232,7 @@ non-ASCII characters."
 	  (w3m-goto-url (concat "about://source/"
 				(substring w3m-current-url (match-end 0)))))
 	 (t
-	  (w3m-goto-url  (concat "about://source/" w3m-current-url))))
-	(w3m-history-restore-position))
+	  (w3m-goto-url  (concat "about://source/" w3m-current-url)))))
     (w3m-message "Can't view page source")))
 
 (defun w3m-make-separator ()
@@ -9280,7 +9264,7 @@ non-ASCII characters."
 	  (case-fold-search t)
 	  header ssl beg)
       (when (or ct charset)
-	(insert "\n\n" separator "\n\nModifier Information\n")
+	(insert "\n\n" separator "\n\nModifer Information\n")
 	(insert "\nDocument Content-Type:  " (or ct ""))
 	(insert "\nDocument Charset:       " (or charset "")))
       (when (and (not (w3m-url-local-p url))
@@ -9316,24 +9300,17 @@ non-ASCII characters."
   "Display the header of the current page."
   (interactive)
   (if w3m-current-url
-      (let ((w3m-prefer-cache t)
-	    (w3m-history-reuse-history-elements t)
-	    (url (cond
-		  ((string-match "\\`about://header/" w3m-current-url)
-		   (substring w3m-current-url (match-end 0)))
-		  ((string-match "\\`about://source/" w3m-current-url)
-		   (concat "about://header/"
-			   (substring w3m-current-url (match-end 0))))
-		  ((string-match "\\`about:" w3m-current-url)
-		   nil)
-		  (t
-		   (concat "about://header/" w3m-current-url)))))
-	(if url
-	    (progn
-	      (w3m-history-store-position)
-	      (w3m-goto-url url)
-	      (w3m-history-restore-position))
-	  (w3m-message "Can't load a header for %s" w3m-current-url)))
+      (let ((w3m-prefer-cache t))
+	(cond
+	 ((string-match "\\`about://header/" w3m-current-url)
+	  (w3m-goto-url (substring w3m-current-url (match-end 0))))
+	 ((string-match "\\`about://source/" w3m-current-url)
+	  (w3m-goto-url (concat "about://header/"
+				(substring w3m-current-url (match-end 0)))))
+	 ((string-match "\\`about:" w3m-current-url)
+	  (error "Can't load a header for %s" w3m-current-url))
+	 (t
+	  (w3m-goto-url (concat "about://header/" w3m-current-url)))))
     (w3m-message "Can't view page header")))
 
 (defvar w3m-about-history-max-indentation '(/ (* (window-width) 2) 3)
