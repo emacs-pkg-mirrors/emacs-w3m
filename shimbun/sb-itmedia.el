@@ -189,25 +189,15 @@ R[TQ[*i0d##D=I3|g`2yr@sc<pK1SB
 
 (luna-define-method shimbun-clear-contents ((shimbun shimbun-itmedia) header)
   (prog1
-      (let ((case-fold-search t)
-	    icon start)
+      (let ((case-fold-search t) (start))
 	(goto-char (point-min))
-	(when (and (re-search-forward "<div\\(?:[\t\n ]+[^\t\n >]+\\)*\
-\[\t\n ]+class=\"article-icon\""
+	(when (and (re-search-forward "\
+\\(<h[0-9]>[^<]+</h[0-9]>[^<]*\\(\\(?:<[^>h][^>]*>[^<]*\\)*\\)\\)?<!--BODY-->"
 				      nil t)
-		   (shimbun-end-of-tag "div"))
-	  (setq icon (match-string 0)))
-	(goto-char (point-min))
-	(when (and (search-forward "<!--BODY-->" nil t)
 		   (progn
-		     (setq start (match-end 0))
-		     (when (and (re-search-backward "<h[0-9]>[^<]+</h[0-9]>"
-						    nil t)
-				(progn
-				  (goto-char (match-end 0))
-				  (not (re-search-forward "<h[0-9]>" start t))))
-		       (delete-region (match-end 0) start)
-		       (setq start (match-beginning 0)))
+		     (if (setq start (match-beginning 1))
+			 (delete-region (match-beginning 2) (match-end 2))
+		       (setq start (match-end 0)))
 		     (re-search-forward "<!--BODY ?END-->" nil t)))
 	  (delete-region (match-beginning 0) (point-max))
 	  (delete-region (point-min) start)
@@ -222,9 +212,6 @@ R[TQ[*i0d##D=I3|g`2yr@sc<pK1SB
 	  (skip-chars-forward " \t\r\f\n")
 	  (when (looking-at "<P ALIGN=\"CENTER\"><[AB]")
 	    (delete-region (point-min) (point-at-eol)))
-	  (when icon
-	    (goto-char (point-min))
-	    (insert icon "\n"))
 	  t))
     (shimbun-remove-tags "<!-- AD START -->" "<!-- AD END -->")
     (shimbun-remove-tags "\
