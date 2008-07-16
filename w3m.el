@@ -176,7 +176,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1373 $"))
+    (let ((rev "$Revision: 1.1375 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -3580,7 +3580,6 @@ The database is kept in `w3m-entity-table'."
 STATUS is current image status.
 If NO-CACHE is non-nil, cache is not used.
 If URL is specified, only the image with URL is toggled."
-  (interactive "P")
   (let ((cur-point (point))
 	(buffer-read-only)
 	(end (or begin-pos (point-min)))
@@ -3782,11 +3781,13 @@ variable is non-nil (default=t)."
 	     (setq pos (next-single-property-change pos 'w3m-image)))
 	   (while (< pos end)
 	     (when (and
-		    (setq pos (next-single-property-change pos 'w3m-image end))
+		    (setq pos (next-single-property-change pos 'w3m-image
+							   nil end))
 		    (setq url (get-text-property pos 'w3m-image)))
 	       (unless (string-match safe-regexp url)
 		 (throw 'done nil)))
-	     (setq pos (next-single-property-change pos 'w3m-image end)))
+	     (setq pos (next-single-property-change pos 'w3m-image
+						    nil end)))
 	   t))))
     (if (or status
 	    (not safe-regexp)
