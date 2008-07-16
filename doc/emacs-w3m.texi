@@ -3788,20 +3788,15 @@ are displayed by emacs-w3m, though.  Here's an example:
 If the prefix arg is given, force displaying of images."
   (interactive "P")
   (with-current-buffer gnus-article-buffer
-    (let ((st (point-min))
-          (nd (point-max))
-          (w3m-async-exec w3m-async-exec))
-      (save-restriction
-        (widen)
-        (if (or (> st (point-min)) (< nd (point-max)))
-            (setq w3m-async-exec nil))
-        (article-goto-body)
-        (goto-char (or (text-property-not-all (point) (point-max)
-                                              'w3m-safe-url-regexp nil)
-                       (point)))
-        (if (interactive-p)
-            (call-interactively 'w3m-toggle-inline-images)
-          (w3m-toggle-inline-images arg))))))
+    (save-restriction
+      (widen)
+      (article-goto-body)
+      (goto-char (or (text-property-not-all (point) (point-max)
+                                            'w3m-safe-url-regexp nil)
+                     (point)))
+      (if (interactive-p)
+          (call-interactively 'w3m-toggle-inline-images)
+        (w3m-toggle-inline-images arg)))))
 
 (eval-after-load "gnus-sum"
   '(define-key gnus-summary-mode-map
@@ -5259,6 +5254,12 @@ laut-de.platten_rock
 n24-de.boerse n24-de.boulevard n24-de.nachrichten n24-de.netnews
 n24-de.politik n24-de.sport n24-de.wirtschaft
 
+@item @uref{http://ohmynews.co.jp/, OhmyNews Japan}
+ohmynews-jp.news watashi ohmynews-jp.life ohmynews-jp.shakai
+ohmynews-jp.seiji ohmynews-jp.keizai ohmynews-jp.kaigai
+ohmynews-jp.culture ohmynews-jp.style ohmynews-jp.sports ohmynews-jp.it
+ohmynews-jp.local
+
 @item @uref{http://opentechpress.jp/, Open Tech Press}
 opentechpress-jp.general opentechpress-jp.enterprise
 opentechpress-jp.opensource opentechpress-jp.security
@@ -5835,7 +5836,7 @@ vinelinux.errata.2x.i386 vinelinux.errata.2x.ppc
 vinelinux.errata.2x.sparc vinelinux.errata.2x.alpha
 vinelinux.errata.1x
 
-@item @uref{http://www.mmz.kantei.go.jp/, Fukuda Cabinet Mail Magazine}
+@item @uref{http://www.kantei.go.jp/, Fukuda Cabinet Mail Magazine}
 kantei.m-magazine-en kantei.m-magazine-ja kantei.m-magazine-en.abe
 kantei.m-magazine-ja.abe kantei.m-magazine-en.koizumi
 kantei.m-magazine-ja.koizumi
