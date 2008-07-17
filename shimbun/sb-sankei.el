@@ -166,14 +166,15 @@ Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAGFBMVEX///8An/8Vb38CnwB
   (unless (string-equal (shimbun-current-group-internal shimbun)
 			"usatoday.ja")
     (goto-char (point-min))
-    (when (and (re-search-forward "\
+    (let (start end)
+      (when (and (re-search-forward "\
 <div[\t\n ]\\(?:[^\t\n >]+[\t\n ]+\\)*id=\"newslistNumber\""
-				  nil t)
-	       (shimbun-end-of-tag "div")
-	       (re-search-backward "\
+				    nil t)
+		 (shimbun-end-of-tag "div")
+		 (re-search-backward "\
 <a[\t\n ]+href=\"\\([^\"]+\\)\"[^>]*>[\t\n ]*次のページ[\t\n ]*</a>"
-				   (match-beginning 0) t))
-      (shimbun-expand-url (match-string 1) url))))
+				     (match-beginning 0) t))
+	(shimbun-expand-url (match-string 1) url)))))
 
 (luna-define-method shimbun-clear-contents :around ((shimbun shimbun-sankei)
 						    header)

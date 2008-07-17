@@ -3840,20 +3840,15 @@ Gnus のマニュアルを読んでください (@pxref{Display Customization,
 If the prefix arg is given, force displaying of images."
   (interactive "P")
   (with-current-buffer gnus-article-buffer
-    (let ((st (point-min))
-          (nd (point-max))
-          (w3m-async-exec w3m-async-exec))
-      (save-restriction
-        (widen)
-        (if (or (> st (point-min)) (< nd (point-max)))
-            (setq w3m-async-exec nil))
-        (article-goto-body)
-        (goto-char (or (text-property-not-all (point) (point-max)
-                                              'w3m-safe-url-regexp nil)
-                       (point)))
-        (if (interactive-p)
-            (call-interactively 'w3m-toggle-inline-images)
-          (w3m-toggle-inline-images arg))))))
+    (save-restriction
+      (widen)
+      (article-goto-body)
+      (goto-char (or (text-property-not-all (point) (point-max)
+                                            'w3m-safe-url-regexp nil)
+                     (point)))
+      (if (interactive-p)
+          (call-interactively 'w3m-toggle-inline-images)
+        (w3m-toggle-inline-images arg)))))
 
 (eval-after-load "gnus-sum"
   '(define-key gnus-summary-mode-map
@@ -4002,10 +3997,19 @@ If the prefix arg is given, all images are considered to be safe."
 @node VM
 @section VM (vieW maiL) は Wanderlust にあらず
 
-VM で html メールを表示する機能を提供する vm-w3m.el モジュールとパッチ
-は VM の新しいメインテイナーに引き継がれましたが、まだ VM の安定版に洗わ
-れていません。@uref{http://www.nongnu.org/viewmail/, VM ホームページ} を
-訪ねてみてください。
+VM は現在 emacs-w3m をサポートしています。8.x 以上のバージョンの VM を使っ
+てください。それらは @uref{http://www.nongnu.org/viewmail/,
+VM ホームページ} にあります。以前 emacs-w3m に含まれてい
+た @file{vm-w3m.el} と @file{vm-7.19.patch} は VM に統合されました。
+
+@quotation
+ヒント: VM のどれかのバッファにいるときに、プレゼンテーション・バッファ
+の画像表示をトグルに切り換えたい場合は、例えば以下を使ってください:
+
+@lisp
+(define-key vm-mode-map "T" 'vm-w3m-safe-toggle-inline-images)
+@end lisp
+@end quotation
 
 @node Frequently Asked Questions
 @chapter 必ず答があるとは限らない
@@ -5267,6 +5271,12 @@ laut-de.platten_rock
 n24-de.boerse n24-de.boulevard n24-de.nachrichten n24-de.netnews
 n24-de.politik n24-de.sport n24-de.wirtschaft
 
+@item @uref{http://ohmynews.co.jp/, オーマイニュース}
+ohmynews-jp.news ohmynews-jp.watashi ohmynews-jp.life ohmynews-jp.shakai
+ohmynews-jp.seiji ohmynews-jp.keizai ohmynews-jp.kaigai
+ohmynews-jp.culture ohmynews-jp.style ohmynews-jp.sports ohmynews-jp.it
+ohmynews-jp.local
+
 @item @uref{http://opentechpress.jp/, Open Tech Press}
 opentechpress-jp.general opentechpress-jp.enterprise
 opentechpress-jp.opensource opentechpress-jp.security
@@ -5846,7 +5856,7 @@ vinelinux.errata.2x.i386 vinelinux.errata.2x.ppc
 vinelinux.errata.2x.sparc vinelinux.errata.2x.alpha
 vinelinux.errata.1x
 
-@item @uref{http://www.mmz.kantei.go.jp/, 福田内閣メールマガジン}
+@item @uref{http://www.kantei.go.jp/, 福田内閣メールマガジン}
 kantei.m-magazine-en kantei.m-magazine-ja kantei.m-magazine-en.abe
 kantei.m-magazine-ja.abe kantei.m-magazine-en.koizumi
 kantei.m-magazine-ja.koizumi
