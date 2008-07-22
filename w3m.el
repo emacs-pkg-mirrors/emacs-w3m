@@ -176,7 +176,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1384 $"))
+    (let ((rev "$Revision: 1.1376 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -1563,17 +1563,19 @@ a new buffer if a user invokes it in a buffer not being running the
   :group 'w3m
   :type 'boolean)
 
-(defcustom w3m-use-favicon t
+(defcustom w3m-use-favicon (featurep 'w3m-image)
   "*Non-nil means show favicon images if they are available.
 It will be set to nil automatically if ImageMagick's `convert' program
 does not support the ico format."
   :get (lambda (symbol)
 	 (and (not noninteractive)
 	      (default-value symbol)
+	      (featurep 'w3m-image)
 	      (w3m-favicon-usable-p)))
   :set (lambda (symbol value)
 	 (custom-set-default symbol (and (not noninteractive)
 					 value
+					 (featurep 'w3m-image)
 					 (w3m-favicon-usable-p))))
   :group 'w3m
   :type 'boolean)
@@ -3817,10 +3819,11 @@ Are you sure you really want to show all images (maybe insecure)? "))))
       (w3m-message "There are some images considered unsafe;\
  use the prefix arg to force display"))))
 
-(defun w3m-resize-inline-image-internal (url rate)
+(defsubst w3m-resize-inline-image-internal (url rate)
   "Resize an inline image on the cursor position.
 URL is a url of an image.  RATE is a number of percent used when
 resizing an image."
+  (interactive "P")
   (let* ((buffer-read-only)
 	 (start (point))
 	 (end (or (next-single-property-change start 'w3m-image)
@@ -3880,37 +3883,27 @@ You are retrieving non-secure image. Continue?")))
 		(set-marker end nil)))))))))
 
 (defun w3m-zoom-in-image (&optional rate)
-  "Zoom in an image on the point.
-Numeric prefix specifies how many percent the image is enlarged by
-\(30 means enlarging the image by 130%).  The default is the value of
-the `w3m-resize-image-scale' variable."
+  "Zoom in an image on the point."
   (interactive "P")
   (unless (w3m-display-graphic-p)
     (error "Can't display images in this environment"))
-  (unless (w3m-imagick-convert-program-available-p)
-    (error "ImageMagick's `convert' program is required"))
   (let ((url (w3m-image)))
+    (unless rate
+      (setq rate w3m-resize-image-scale))
     (if url
-	(w3m-resize-inline-image-internal
-	 url
-	 (+ 100 (or rate w3m-resize-image-scale)))
+	(w3m-resize-inline-image-internal url (+ 100 rate))
       (w3m-message "No image at point"))))
 
 (defun w3m-zoom-out-image (&optional rate)
-  "Zoom out an image on the point.
-Numeric prefix specifies how many percent the image is shrunk by
-\(30 means shrinking the image by 70%).  The default is the value of
-the `w3m-resize-image-scale' variable."
+  "Zoom out an image on the point."
   (interactive "P")
   (unless (w3m-display-graphic-p)
     (error "Can't display images in this environment"))
-  (unless (w3m-imagick-convert-program-available-p)
-    (error "ImageMagick's `convert' program is required"))
   (let ((url (w3m-image)))
+    (unless rate
+      (setq rate w3m-resize-image-scale))
     (if url
-	(w3m-resize-inline-image-internal
-	 url
-	 (- 100 (or rate w3m-resize-image-scale)))
+	(w3m-resize-inline-image-internal url (- 100 rate))
       (w3m-message "No image at point"))))
 
 (defun w3m-decode-entities (&optional keep-properties)
@@ -4105,23 +4098,14 @@ It replaces the faces on the arrived anchors from `w3m-anchor' to
 
 (defun w3m-gmane-url-at-point ()
   "Return a url that indicates the thread page in Gmane.
-This function works only when the cursor stays in the References
-header or the Message-ID header, otherwise returns nil.
-
-On the Message-ID header, the url that asks Gmane for the thread
-beginning with the current article will be generated.
-On the References header, the url that asks Gmane for the whole thread
-\(namely it begins with the article of the first ID in the header) will
-be generated.  In that case, Gmane might fail to find the thread since
-it is possible that the root article has been posted to another group.
-
-That it returns an invalid url for the article of the group which is
-not being archived in Gmane cannot be helped."
+This function works only when the cursor stays in the References header
+or the Message-ID header, otherwise returns nil.  That it returns an
+invalid url if Gmane doesn't handle the group cannot be helped."
   (save-excursion
     (let ((fmt "http://news.gmane.org/group/thread=%s/force_load=t")
 	  (start (point))
 	  (inhibit-point-motion-hooks t)
-	  case-fold-search)
+	  md case-fold-search)
       (goto-char (point-min))
       (re-search-forward (concat "^\\(?:"
 				 (regexp-quote mail-header-separator)
@@ -4135,8 +4119,15 @@ not being archived in Gmane cannot be helped."
 	  (beginning-of-line)
 	  (while (and (memq (char-after) '(?\t ? ))
 		      (zerop (forward-line -1))))
-	  (when (looking-at
-		 "\\(?:Message-ID\\|References\\):[\t\n ]*<\\([^\t\n <>]+\\)>")
+	  (when (or (looking-at "References:[\t\n ]*<\\([^\t\n <>]+\\)>")
+		    (prog1
+			(looking-at "Message-ID:[\t\n ]*<\\([^\t\n <>]+\\)>")
+		      (setq md (match-data))
+		      (goto-char (point-min))
+		      (unless (re-search-forward
+			       "^References:[\t\n ]*<\\([^\t\n <>]+\\)>"
+			       nil t)
+			(set-match-data md))))
 	    (format
 	     fmt
 	     (w3m-url-encode-string (match-string-no-properties 1)))))))))
@@ -5437,9 +5428,6 @@ POST-DATA and REFERER will be sent to the web server with a request."
 
 ;;;###autoload
 (defun w3m-download (url &optional filename no-cache handler post-data)
-  "Download contents of URL to a file named FILENAME.
-NO-CHACHE (which the prefix argument gives when called interactively)
-specifies not using the cached data."
   (interactive
    (let* ((url (w3m-input-url "Download URL (default HOME): "
 			      (when (stringp w3m-current-url)
@@ -7277,7 +7265,6 @@ as if the folder command of MH performs with the -pack option."
     (define-key map "B" 'w3m-view-previous-page)
     (define-key map "N" 'w3m-view-next-page)
     (define-key map "^" 'w3m-view-parent-page)
-    (define-key map "\M-d" 'w3m-download)
     (define-key map "d" 'w3m-download-this-url)
     (define-key map "u" 'w3m-print-this-url)
     (define-key map "I" 'w3m-view-image)
@@ -7833,8 +7820,7 @@ or a list which consists of the following elements:
 \\[w3m-view-url-with-external-browser]	Display the current page using the\
  external browser.
 
-\\[w3m-download]	Download the URL.
-\\[w3m-download-this-url]	Download the URL under point.
+\\[w3m-download-this-url]	Download the file or the page under point.
 
 \\[w3m-view-image]	Display the image under point in the external viewer.
 \\[w3m-save-image]	Save the image under point to a file.
@@ -8067,14 +8053,11 @@ Otherwise, it defaults to `w3m-horizontal-shift-columns'."
 	     (not (and (eq last-command this-command)
 		       (or (eq (point) (point-min))
 			   (eq (point) (point-max)))))
-	     (or (memq this-command '(beginning-of-buffer end-of-buffer))
-		 (string-match "\\`i?search-" (symbol-name this-command))
+	     (or (string-match "\\`i?search-" (symbol-name this-command))
 		 (and (markerp (nth 1 w3m-current-position))
 		      (markerp (nth 2 w3m-current-position))
-		      (>= (point)
-			  (marker-position (nth 1 w3m-current-position)))
-		      (<= (point)
-			  (marker-position (nth 2 w3m-current-position))))))
+		      (>= (point) (marker-position (nth 1 w3m-current-position)))
+		      (<= (point) (marker-position (nth 2 w3m-current-position))))))
     (w3m-horizontal-on-screen))
   (setq w3m-horizontal-scroll-done nil))
 
@@ -8501,11 +8484,6 @@ It currently works only with Emacs 22 and newer."
 			       (setq w3m-modeline-title-timer nil))))
 			 (current-buffer)))))))
 
-(defconst w3m-buffer-local-url "buffer://")
-(defun w3m-buffer-local-url-p (url)
-  (save-match-data
-    (string-match (concat "^" w3m-buffer-local-url) url)))
-
 ;;;###autoload
 (defun w3m-goto-url (url &optional reload charset post-data referer handler
 			 element)
@@ -8588,22 +8566,6 @@ the current page."
 				 (eval w3m-local-find-file-function))
 			       file)))))
       (error nil)))
-   ;; process buffer-local url
-   ((w3m-buffer-local-url-p url)
-    (let (file-part fragment-part)
-      (w3m-string-match-url-components url)
-      (setq file-part (concat (match-string 4 url)
-			      (match-string 5 url))
-	    fragment-part (match-string 9 url))
-      (cond
-       ((and (string= file-part "")
-	     fragment-part)
-	(w3m-search-name-anchor fragment-part))
-       ((not (string= file-part ""))
-	(w3m-goto-url (w3m-expand-url (substring url (match-beginning 4))
-				      (concat "file://" default-directory))
-		      reload charset post-data referer handler element))
-       (t (w3m-message "No URL at point")))))
    ((w3m-url-valid url)
     (w3m-buffer-setup)			; Setup buffer.
     (w3m-arrived-setup)			; Setup arrived database.
@@ -9057,7 +9019,7 @@ defaults to the value of `w3m-home-page' or \"about:\"."
 			   (not (and (setq args (cdr (member "w3m" args)))
 				     (member (car args) directives)))))
 	       args))
-      (defalias 'w3m-examine-command-line-args (lambda nil)))
+      (defalias 'w3m-examine-command-line-args 'ignore))
     ;; Inhibit the startup screen.
     (when (and url
 	       ;; Since XEmacs provides `inhibit-startup-message' as
@@ -9223,9 +9185,7 @@ parse the meta tag to extract the charset."
     (let ((w3m-current-buffer (current-buffer)))
       (unless charset
 	(setq charset (w3m-correct-charset (w3m-detect-meta-charset))))
-      (setq url (or url
-		    w3m-buffer-local-url)
-	    w3m-current-url url
+      (setq w3m-current-url url
 	    w3m-current-base-url url
 	    w3m-current-coding-system
 	    (if charset
@@ -9277,9 +9237,7 @@ non-ASCII characters."
   (interactive "p")
   (if w3m-current-url
       (let ((w3m-prefer-cache t)
-	    (w3m-view-source-decode-level (if (numberp arg) arg 0))
-	    (w3m-history-reuse-history-elements t))
-	(w3m-history-store-position)
+	    (w3m-view-source-decode-level (if (numberp arg) arg 0)))
 	(cond
 	 ((string-match "\\`about://source/" w3m-current-url)
 	  (w3m-goto-url (substring w3m-current-url (match-end 0))))
@@ -9287,8 +9245,7 @@ non-ASCII characters."
 	  (w3m-goto-url (concat "about://source/"
 				(substring w3m-current-url (match-end 0)))))
 	 (t
-	  (w3m-goto-url  (concat "about://source/" w3m-current-url))))
-	(w3m-history-restore-position))
+	  (w3m-goto-url  (concat "about://source/" w3m-current-url)))))
     (w3m-message "Can't view page source")))
 
 (defun w3m-make-separator ()
@@ -9320,7 +9277,7 @@ non-ASCII characters."
 	  (case-fold-search t)
 	  header ssl beg)
       (when (or ct charset)
-	(insert "\n\n" separator "\n\nModifier Information\n")
+	(insert "\n\n" separator "\n\nModifer Information\n")
 	(insert "\nDocument Content-Type:  " (or ct ""))
 	(insert "\nDocument Charset:       " (or charset "")))
       (when (and (not (w3m-url-local-p url))
@@ -9356,24 +9313,17 @@ non-ASCII characters."
   "Display the header of the current page."
   (interactive)
   (if w3m-current-url
-      (let ((w3m-prefer-cache t)
-	    (w3m-history-reuse-history-elements t)
-	    (url (cond
-		  ((string-match "\\`about://header/" w3m-current-url)
-		   (substring w3m-current-url (match-end 0)))
-		  ((string-match "\\`about://source/" w3m-current-url)
-		   (concat "about://header/"
-			   (substring w3m-current-url (match-end 0))))
-		  ((string-match "\\`about:" w3m-current-url)
-		   nil)
-		  (t
-		   (concat "about://header/" w3m-current-url)))))
-	(if url
-	    (progn
-	      (w3m-history-store-position)
-	      (w3m-goto-url url)
-	      (w3m-history-restore-position))
-	  (w3m-message "Can't load a header for %s" w3m-current-url)))
+      (let ((w3m-prefer-cache t))
+	(cond
+	 ((string-match "\\`about://header/" w3m-current-url)
+	  (w3m-goto-url (substring w3m-current-url (match-end 0))))
+	 ((string-match "\\`about://source/" w3m-current-url)
+	  (w3m-goto-url (concat "about://header/"
+				(substring w3m-current-url (match-end 0)))))
+	 ((string-match "\\`about:" w3m-current-url)
+	  (error "Can't load a header for %s" w3m-current-url))
+	 (t
+	  (w3m-goto-url (concat "about://header/" w3m-current-url)))))
     (w3m-message "Can't view page header")))
 
 (defvar w3m-about-history-max-indentation '(/ (* (window-width) 2) 3)
@@ -10067,7 +10017,6 @@ the `w3m-mode', otherwise use an existing emacs-w3m buffer."
      (url
       (setq safe-regexp (get-text-property (point) 'w3m-safe-url-regexp))
       (if (or (not safe-regexp)
-	      (w3m-buffer-local-url-p url)
 	      (string-match safe-regexp url)
 	      (and force
 		   (or (not (interactive-p))
@@ -10102,7 +10051,6 @@ This link is considered to be unsafe; use the prefix arg to view anyway"))))
 	(let ((safe-regexp (get-text-property (point) 'w3m-safe-url-regexp))
 	      (use-dialog-box t))
 	  (when (or (not safe-regexp)
-		    (w3m-buffer-local-url-p url)
 		    (string-match safe-regexp url)
 		    (y-or-n-p "\
 This link is considered to be unsafe; continue? "))
