@@ -41,17 +41,7 @@
     (require 'xml)))
 (eval '(require 'xml))
 
-(eval-and-compile
-  (luna-define-class shimbun-rss (shimbun) (ignored-subject))
-  (luna-define-internal-accessors 'shimbun-rss))
-
-(luna-define-method initialize-instance :after ((shimbun shimbun-rss)
-						&rest init-args)
-  (shimbun-rss-set-ignored-subject-internal
-   shimbun
-   (symbol-value (intern-soft (format "shimbun-%s-ignored-subject"
-				      (shimbun-server shimbun)))))
-  shimbun)
+(luna-define-class shimbun-rss (shimbun) ())
 
 (luna-define-generic shimbun-rss-process-date (shimbun-rss date)
   "Process DATE string and return proper Date string to show it in MUA.")
@@ -182,7 +172,6 @@ But clarify need ignored URL return nil.")
 			 (shimbun-index-url shimbun)
 			 (error-message-string err))
 		nil)))
-	(ignored-subject (shimbun-rss-ignored-subject-internal shimbun))
 	dc-ns rss-ns author hankaku headers)
     (when xml
       (setq dc-ns (shimbun-rss-get-namespace-prefix
@@ -213,24 +202,21 @@ But clarify need ignored URL return nil.")
 		(let* ((date (or (shimbun-rss-get-date shimbun url)
 				 (shimbun-rss-node-text dc-ns 'date item)
 				 (shimbun-rss-node-text rss-ns 'pubDate item)))
-		       (id (shimbun-rss-build-message-id shimbun url date))
-		       (subject (shimbun-rss-node-text rss-ns 'title item)))
-		  (when (and id
-			     (or need-all-items
-				 (not (shimbun-search-id shimbun id)))
-			     (if ignored-subject
-				 (not (string-match ignored-subject subject))
-			       t))
+		       (id (shimbun-rss-build-message-id shimbun url date)))
+		  (when (and id (or need-all-items
+				    (not (shimbun-search-id shimbun id))))
 		    (push
 		     (shimbun-create-header
 		      0
 		      (if hankaku
 			  (with-current-buffer hankaku
-			    (insert (or subject ""))
+			    (insert (or (shimbun-rss-node-text rss-ns 'title
+							       item)
+					""))
 			    (shimbun-japanese-hankaku-region (point-min)
 							     (point-max))
 			    (prog1 (buffer-string) (erase-buffer)))
-			subject)
+			(shimbun-rss-node-text rss-ns 'title item))
 		      (or (shimbun-rss-node-text rss-ns 'author item)
 			  (shimbun-rss-node-text dc-ns 'creator item)
 			  (shimbun-rss-node-text dc-ns 'contributor item)
