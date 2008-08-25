@@ -1,3 +1,31 @@
+2008-08-25  David Hansen  <david.hansen@gmx.net>
+
+	* w3m.el (w3m-about-header): Fixed typo.
+
+2008-08-05  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-view-source, w3m-view-header): Save points positioned
+	last in pages.  Suggested by Dan Jacobson <jidanni@jidanni.org>.
+
+2008-07-22  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m-ems.el: Bind w3m-image-default-background when compiling.
+
+2008-07-20  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m-hist.el (w3m-history-restore-position): Run
+	w3m-after-cursor-move-hook after restoring cursor position.
+
+2008-07-18  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m.el (w3m-image-default-background): New variable.
+
+	* w3m-ems.el (w3m-create-image): Use it.
+	(w3m-initialize-graphic-icons): Check if xpm is available.  Reported by
+	Diego 'Flameeyes' Pettenò <flameeyes@gmail.com>.
+
+	* w3m-filter.el (w3m-filter-wikipedia): Improve regexp.
+
 2008-07-01  Katsumi Yamaoka  <yamaoka@jpl.org>
 
 	* w3m-search.el (w3m-search-engine-alist): Test if mule-version is
