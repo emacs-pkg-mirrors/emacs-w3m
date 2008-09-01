@@ -176,7 +176,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1375 $"))
+    (let ((rev "$Revision: 1.1380 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -454,6 +454,19 @@ to set this variable properly."
   :group 'w3m
   :type '(radio (const :tag "Auto Detect" nil)
 		(integer :format "Specify Pixels: %v\n" :size 0)))
+
+(defcustom w3m-image-default-background nil
+  "Color name used as transparent color of image.
+Nil means to use the background color of the Emacs frame.  The
+null string \"\" is special, that will be replaced with the
+background color of the buffer. Note that this value is effective
+only with Emacs 22 and greater."
+  :group 'w3m
+  :type '(radio (string :format "Color: %v\n" :size 0
+			:match (lambda (widget value)
+				 (and (stringp value) (> (length value) 0))))
+		(const :tag "Use the background color of the Emacs frame" nil)
+		(const :tag "Null string" "")))
 
 (defvar w3m-accept-japanese-characters
   (and (not noninteractive)
@@ -1550,19 +1563,17 @@ a new buffer if a user invokes it in a buffer not being running the
   :group 'w3m
   :type 'boolean)
 
-(defcustom w3m-use-favicon (featurep 'w3m-image)
+(defcustom w3m-use-favicon t
   "*Non-nil means show favicon images if they are available.
 It will be set to nil automatically if ImageMagick's `convert' program
 does not support the ico format."
   :get (lambda (symbol)
 	 (and (not noninteractive)
 	      (default-value symbol)
-	      (featurep 'w3m-image)
 	      (w3m-favicon-usable-p)))
   :set (lambda (symbol value)
 	 (custom-set-default symbol (and (not noninteractive)
 					 value
-					 (featurep 'w3m-image)
 					 (w3m-favicon-usable-p))))
   :group 'w3m
   :type 'boolean)
@@ -3806,11 +3817,10 @@ Are you sure you really want to show all images (maybe insecure)? "))))
       (w3m-message "There are some images considered unsafe;\
  use the prefix arg to force display"))))
 
-(defsubst w3m-resize-inline-image-internal (url rate)
+(defun w3m-resize-inline-image-internal (url rate)
   "Resize an inline image on the cursor position.
 URL is a url of an image.  RATE is a number of percent used when
 resizing an image."
-  (interactive "P")
   (let* ((buffer-read-only)
 	 (start (point))
 	 (end (or (next-single-property-change start 'w3m-image)
@@ -3870,27 +3880,37 @@ You are retrieving non-secure image. Continue?")))
 		(set-marker end nil)))))))))
 
 (defun w3m-zoom-in-image (&optional rate)
-  "Zoom in an image on the point."
+  "Zoom in an image on the point.
+Numeric prefix specifies how many percent the image is enlarged by
+\(30 means enlarging the image by 130%).  The default is the value of
+the `w3m-resize-image-scale' variable."
   (interactive "P")
   (unless (w3m-display-graphic-p)
     (error "Can't display images in this environment"))
+  (unless (w3m-imagick-convert-program-available-p)
+    (error "ImageMagick's `convert' program is required"))
   (let ((url (w3m-image)))
-    (unless rate
-      (setq rate w3m-resize-image-scale))
     (if url
-	(w3m-resize-inline-image-internal url (+ 100 rate))
+	(w3m-resize-inline-image-internal
+	 url
+	 (+ 100 (or rate w3m-resize-image-scale)))
       (w3m-message "No image at point"))))
 
 (defun w3m-zoom-out-image (&optional rate)
-  "Zoom out an image on the point."
+  "Zoom out an image on the point.
+Numeric prefix specifies how many percent the image is shrunk by
+\(30 means shrinking the image by 70%).  The default is the value of
+the `w3m-resize-image-scale' variable."
   (interactive "P")
   (unless (w3m-display-graphic-p)
     (error "Can't display images in this environment"))
+  (unless (w3m-imagick-convert-program-available-p)
+    (error "ImageMagick's `convert' program is required"))
   (let ((url (w3m-image)))
-    (unless rate
-      (setq rate w3m-resize-image-scale))
     (if url
-	(w3m-resize-inline-image-internal url (- 100 rate))
+	(w3m-resize-inline-image-internal
+	 url
+	 (- 100 (or rate w3m-resize-image-scale)))
       (w3m-message "No image at point"))))
 
 (defun w3m-decode-entities (&optional keep-properties)
@@ -8040,11 +8060,14 @@ Otherwise, it defaults to `w3m-horizontal-shift-columns'."
 	     (not (and (eq last-command this-command)
 		       (or (eq (point) (point-min))
 			   (eq (point) (point-max)))))
-	     (or (string-match "\\`i?search-" (symbol-name this-command))
+	     (or (memq this-command '(beginning-of-buffer end-of-buffer))
+		 (string-match "\\`i?search-" (symbol-name this-command))
 		 (and (markerp (nth 1 w3m-current-position))
 		      (markerp (nth 2 w3m-current-position))
-		      (>= (point) (marker-position (nth 1 w3m-current-position)))
-		      (<= (point) (marker-position (nth 2 w3m-current-position))))))
+		      (>= (point)
+			  (marker-position (nth 1 w3m-current-position)))
+		      (<= (point)
+			  (marker-position (nth 2 w3m-current-position))))))
     (w3m-horizontal-on-screen))
   (setq w3m-horizontal-scroll-done nil))
 
@@ -9224,7 +9247,9 @@ non-ASCII characters."
   (interactive "p")
   (if w3m-current-url
       (let ((w3m-prefer-cache t)
-	    (w3m-view-source-decode-level (if (numberp arg) arg 0)))
+	    (w3m-view-source-decode-level (if (numberp arg) arg 0))
+	    (w3m-history-reuse-history-elements t))
+	(w3m-history-store-position)
 	(cond
 	 ((string-match "\\`about://source/" w3m-current-url)
 	  (w3m-goto-url (substring w3m-current-url (match-end 0))))
@@ -9232,7 +9257,8 @@ non-ASCII characters."
 	  (w3m-goto-url (concat "about://source/"
 				(substring w3m-current-url (match-end 0)))))
 	 (t
-	  (w3m-goto-url  (concat "about://source/" w3m-current-url)))))
+	  (w3m-goto-url  (concat "about://source/" w3m-current-url))))
+	(w3m-history-restore-position))
     (w3m-message "Can't view page source")))
 
 (defun w3m-make-separator ()
@@ -9264,7 +9290,7 @@ non-ASCII characters."
 	  (case-fold-search t)
 	  header ssl beg)
       (when (or ct charset)
-	(insert "\n\n" separator "\n\nModifer Information\n")
+	(insert "\n\n" separator "\n\nModifier Information\n")
 	(insert "\nDocument Content-Type:  " (or ct ""))
 	(insert "\nDocument Charset:       " (or charset "")))
       (when (and (not (w3m-url-local-p url))
@@ -9300,17 +9326,24 @@ non-ASCII characters."
   "Display the header of the current page."
   (interactive)
   (if w3m-current-url
-      (let ((w3m-prefer-cache t))
-	(cond
-	 ((string-match "\\`about://header/" w3m-current-url)
-	  (w3m-goto-url (substring w3m-current-url (match-end 0))))
-	 ((string-match "\\`about://source/" w3m-current-url)
-	  (w3m-goto-url (concat "about://header/"
-				(substring w3m-current-url (match-end 0)))))
-	 ((string-match "\\`about:" w3m-current-url)
-	  (error "Can't load a header for %s" w3m-current-url))
-	 (t
-	  (w3m-goto-url (concat "about://header/" w3m-current-url)))))
+      (let ((w3m-prefer-cache t)
+	    (w3m-history-reuse-history-elements t)
+	    (url (cond
+		  ((string-match "\\`about://header/" w3m-current-url)
+		   (substring w3m-current-url (match-end 0)))
+		  ((string-match "\\`about://source/" w3m-current-url)
+		   (concat "about://header/"
+			   (substring w3m-current-url (match-end 0))))
+		  ((string-match "\\`about:" w3m-current-url)
+		   nil)
+		  (t
+		   (concat "about://header/" w3m-current-url)))))
+	(if url
+	    (progn
+	      (w3m-history-store-position)
+	      (w3m-goto-url url)
+	      (w3m-history-restore-position))
+	  (w3m-message "Can't load a header for %s" w3m-current-url)))
     (w3m-message "Can't view page header")))
 
 (defvar w3m-about-history-max-indentation '(/ (* (window-width) 2) 3)
