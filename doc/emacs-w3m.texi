@@ -1737,7 +1737,6 @@ down or up.
 
 @node Downloading
 @section Downloading a file
-@cindex Downloading files
 
 It is possible to download (i.e. fetch, but not display) any web page or
 file with emacs-w3m: just put the point on the link you want to
@@ -1758,16 +1757,9 @@ look at our friend project ``emacs-wget'', its homepage is at
 @kindex d (Lynx-like keymap)
 @kindex D (Info-like keymap)
 @findex w3m-download-this-url
-Download the file or the page pointed to by the link under point
+@cindex Downloading files
+Download the file or page pointed by the link under point
 (@code{w3m-download-this-url}).
-
-@item @kbd{M-d} (Lynx-like keymap)
-@itemx @kbd{d} (Info-like keymap)
-@kindex M-d (Lynx-like keymap)
-@kindex d (Info-like keymap)
-@findex w3m-download
-Download the contents of URL to a local file (@code{w3m-download}).  You
-will be prompted for the URL and the name of a local file.
 @end table
 
 @node Submitting Forms
@@ -3169,14 +3161,6 @@ Image type of display favicon.
 @vindex w3m-favicon-use-cache-file
 If non-@code{nil}, use favicon cache file.
 
-@item w3m-favicon-default-background
-@vindex w3m-favicon-default-background
-Color name used as transparent color of favicon image.  @code{Nil} means
-to use the background color of the Emacs frame.  The null string "" is
-special, that will be replaced with the background color of the header
-line or the mode line on which the favicon is displayed.  Note that this
-value is effective only with Emacs 22 and greater.
-
 @item w3m-icon-directory
 @vindex w3m-icon-directory
 Directory where emacs-w3m should find icon files.
@@ -3255,13 +3239,6 @@ or reload the current page in an emacs-w3m buffer.
 Non-@code{nil} means show favicon images if they are available.  It will
 be set to @code{nil} automatically if ImageMagick's @code{convert}
 program does not support the ico format.
-
-@item w3m-image-default-background
-@vindex w3m-image-default-background
-Color name used as transparent color of image.  @code{Nil} means to use
-the background color of the Emacs frame.  The null string "" is special,
-that will be replaced with the background color of the buffer. Note that
-this value is effective only with Emacs 22 and greater.
 @end table
 
 @node Form Variables
@@ -5285,35 +5262,7 @@ perlentaucher-de.aktuell
 rediff.news
 
 @item @uref{http://www.slashdot.org/, Slashdot}
-slashdot.frontpage slashdot.apple slashdot.askslashdot slashdot.books
-slashdot.developers slashdot.games slashdot.hardware slashdot.interviews
-slashdot.IT slashdot.linux slashdot.mobile slashdot.politics
-slashdot.science
-
-The following variables are available for configuring the comment section
-of the Slashdot shimbun:
-
-@table @code
-@item shimbun-slashdot-get-comments
-@vindex shimbun-slashdot-get-comments
-If set to @code{t} (the default), comments will be retrieved for every
-article.  They are separated from the intro text through a formfeed
-character (i.e. ``^L''); you can access them by scrolling the article
-buffer as usual (for Gnus you can use the ``Next page'' button and the
-``Previous page'' button).  Setting this variable to @code{nil} will
-deactivate retrieval of comments.
-
-@item shimbun-slashdot-comment-threshold
-@vindex shimbun-slashdot-comment-threshold
-Threshold for displayed comments (default: 3).  Can be a number between
--1 (all comments) and 5 (highest rating).
-
-@item shimbun-slashdot-comment-display
-@vindex shimbun-slashdot-comment-display
-Type of display for the comments (default: ``flat'').  Can be either
-``flat'', ``thread'' or ``nested''.  Note that this must be a string,
-not a symbol.
-@end table
+slashdot.frontpage
 
 @item @uref{http://slashdot.jp/, Slashdot Japan}
 slashdot-jp.story slashdot-jp.askslashdot slashdot-jp.bookreview
@@ -5877,9 +5826,8 @@ vinelinux.errata.2x.i386 vinelinux.errata.2x.ppc
 vinelinux.errata.2x.sparc vinelinux.errata.2x.alpha
 vinelinux.errata.1x
 
-@item @uref{http://www.mmz.kantei.go.jp/, Aso Cabinet Mail Magazine}
-kantei.m-magazine-en kantei.m-magazine-ja kantei.m-magazine-en.fukuda
-kantei.m-magazine-ja.fukuda kantei.m-magazine-en.abe
+@item @uref{http://www.mmz.kantei.go.jp/, Fukuda Cabinet Mail Magazine}
+kantei.m-magazine-en kantei.m-magazine-ja kantei.m-magazine-en.abe
 kantei.m-magazine-ja.abe kantei.m-magazine-en.koizumi
 kantei.m-magazine-ja.koizumi
 

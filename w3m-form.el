@@ -1254,36 +1254,6 @@ textarea, or type \
 `\\<w3m-form-input-textarea-map>\\[w3m-form-input-textarea-exit]' to quit \
 textarea")))
 
-(eval-and-compile
-  (defalias 'w3m-same-window-p
-    (if (featurep 'xemacs)
-	(lambda (buffer-name)
-	  "Return non-nil if a buffer named BUFFER-NAME would be shown in the \"same\" window.
-This function returns non-nil if `display-buffer' or
-`pop-to-buffer' would show a buffer named BUFFER-NAME in the
-selected rather than \(as usual\) some other window.  See
-`same-window-buffer-names' and `same-window-regexps'."
-	  (cond
-	   ((not (stringp buffer-name)))
-	   ;; The elements of `same-window-buffer-names' can be buffer
-	   ;; names or cons cells whose cars are buffer names.
-	   ((and (boundp 'same-window-buffer-names)
-		 (member buffer-name same-window-buffer-names)))
-	   ((and (boundp 'same-window-buffer-names)
-		 (assoc buffer-name same-window-buffer-names)))
-	   ((and (boundp 'same-window-regexps)
-		 (save-match-data
-		   (catch 'found
-		     (dolist (regexp same-window-regexps)
-		       ;; The elements of `same-window-regexps' can be regexps
-		       ;; or cons cells whose cars are regexps.
-		       (when (or (and (stringp regexp)
-				      (string-match regexp buffer-name))
-				 (and (consp regexp) (stringp (car regexp))
-				      (string-match (car regexp) buffer-name)))
-			 (throw 'found t)))))))))
-      'same-window-p)))
-
 (defun w3m-form-input-textarea (form hseq)
   (let* ((info  (w3m-form-textarea-info))
 	 (value (w3m-form-get form (car info)))
@@ -1291,9 +1261,12 @@ selected rather than \(as usual\) some other window.  See
 	 (wincfg (current-window-configuration))
 	 (w3mbuffer (current-buffer))
 	 (point (point))
-	 (size (- (window-height cur-win)
-		  (1+ (max window-min-height
-			   w3m-form-input-textarea-buffer-lines))))
+	 (size (min
+		(- (window-height cur-win)
+		   window-min-height 1)
+		(- (window-height cur-win)
+		   (max window-min-height
+			(1+ w3m-form-input-textarea-buffer-lines)))))
 	 (file (get-text-property (point) 'w3m-form-file-name))
 	 (coding (w3m-form-get-coding-system (w3m-form-charlst form)))
 	 (readonly (nth 3 info))
@@ -1356,20 +1329,13 @@ selected rather than \(as usual\) some other window.  See
 	     (get-buffer-window (cdr buffer)))
 	;; same frame only
 	(select-window (get-buffer-window (cdr buffer)))
-      ;; Use the whole current window for the textarea when a user added
-      ;; the buffer name "*w3m form textarea*" to `same-window-buffer-names'
-      ;; (that is available only in Emacs).
-      ;; cf. http://article.gmane.org/gmane.emacs.w3m/7797
-      (unless (w3m-same-window-p (buffer-name (if (consp buffer)
-						  (cdr buffer)
-						buffer)))
-	(condition-case nil
-	    (split-window cur-win (if (> size 0) size window-min-height))
-	  (error
-	   (delete-other-windows)
-	   (split-window cur-win (- (window-height cur-win)
-				    w3m-form-input-textarea-buffer-lines))))
-	(select-window (next-window)))
+      (condition-case nil
+	  (split-window cur-win (if (> size 0) size window-min-height))
+	(error
+	 (delete-other-windows)
+	 (split-window cur-win (- (window-height cur-win)
+				  w3m-form-input-textarea-buffer-lines))))
+      (select-window (next-window))
       (let ((pop-up-windows nil))
 	(switch-to-buffer (if (consp buffer) (cdr buffer) buffer))))))
 
