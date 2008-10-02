@@ -1191,7 +1191,7 @@ It works for only the groups `editorial' and `tenjin'."
 	       (re-search-forward
 		(eval-when-compile
 		  (concat
-		   "/\\(?:editorial\\|column\\)\\.html\"[^\n]+"
+		   "/\\(?:editorial\\|column\\)\\.html\"[^\n0-9]+"
 		   ;; 1. month
 		   "\\([01]?[0-9]\\)" "月"
 		   ;; 2. day
@@ -1534,6 +1534,12 @@ that day if it failed."
 	(while images
 	  (insert (pop images))
 	  (insert (if images "<br><br>\n" "\n")))))
+    ;; Remove zoom buttons.
+    (goto-char (point-min))
+    (while (re-search-forward "[\t\n ]*<img\\(?:[\t\n ]+[^\t\n >]+\\)*\
+\[\t\n ]+class=\"ThmbZoomBtn\"[^>]*>[\t\n ]*"
+			      nil t)
+      (replace-match "\n"))
     ;; Remove garbage before images.
     (goto-char (point-min))
     (while (re-search-forward
