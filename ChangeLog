@@ -1,3 +1,65 @@
+2008-10-08  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-italic): Make it be a underline face on a non-window
+	system by default.
+
+2008-09-24  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-toggle-inline-images-internal)
+	(w3m-resize-inline-image-internal): Confirm whether to retrieve
+	insecure image only once, or don't confirm it if
+	w3m-confirm-leaving-secure-page is nil.  Suggested by Dan Jacobson
+	<jidanni@jidanni.org>.
+	(w3m-confirm-leaving-secure-page): Doc fix.
+
+	* w3mhack.el (w3mhack-makeinfo): Remove Emacs 19 stuff; remove TeX
+	directives first; don't call texinfo-mode.
+
+2008-09-21  Akinori MUSHA  <knu@iDaemons.org>
+
+	* doc/emacs-w3m.texi (Image Variables): Fix syntax error.
+
+	* doc/emacs-w3m-ja.texi (Image Variables): Ditto.
+
+2008-09-17  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m.el (w3m-buffer-local-url): New constant variable.
+	(w3m-buffer-local-url-p): New function.
+	(w3m-goto-url): Also process buffer local url.
+	(w3m-region): Use w3m-buffer-local-url as url if it is not set.
+	(w3m-safe-view-this-url, w3m-mouse-safe-view-this-url): Check if url is
+	buffer local.
+
+2008-09-12  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-download): Add doc string.
+	(w3m-lynx-like-map): Bind M-d key to w3m-download.
+	(w3m-mode): Add w3m-download to major mode info; clarify description of
+	w3m-download-this-url.
+
+2008-09-11  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-gmane-url-at-point): Return a url used for asking Gmane
+	for the thread that begins with the current article instead of the
+	whole thread if it is run on the Message-ID header.
+	(w3m-examine-command-line-args): Make it an alias to `(lambda nil)'
+	instead of `ignore' after it is run for the first time in order to
+	silence the byte compiler.
+
+2008-09-01  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-use-favicon): Assume w3m-image.elc is always loaded.
+	(w3m-resize-inline-image-internal): Change it to a normal function from
+	an inline function; remove interactive.
+	(w3m-zoom-in-image, w3m-zoom-out-image): Error if ImageMagick's convert
+	program is not available; improve doc string.
+	(w3m-auto-show): Don't make the cursor position disappear after
+	executing beginning-of-buffer and end-of-buffer.
+
+2008-08-25  David Hansen  <david.hansen@gmx.net>
+
+	* w3m.el (w3m-about-header): Fixed typo.
+
 2008-08-05  Katsumi Yamaoka  <yamaoka@jpl.org>
 
 	* w3m.el (w3m-view-source, w3m-view-header): Save points positioned
