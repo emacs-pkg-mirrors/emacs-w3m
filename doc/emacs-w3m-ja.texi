@@ -137,7 +137,6 @@ Pretty Good Features
 * Using Namazu::                Namazu $B$G%U%!%$%k$r8!:w$9$k(B
 * Octet::                       application/octet-stream $B%G!<%?$r8+$k(B
 * Frame Local Buffers::         $BB??t$N%;%C%7%g%s$r%U%l!<%`$G%0%k!<%WJ,$1$9$k(B
-* Session Manager::             $B%;%C%7%g%s$NJ]B8$HFI$_$3$_(B
 
 Customizable Variables
 
@@ -153,7 +152,6 @@ Customizable Variables
 * Perldoc Variables::           Perldoc $B$K4XO"$7$?JQ?t(B
 * Namazu Variables::            Namazu $B$K4XO"$7$?JQ?t(B
 * Octet Variables::             Octet $B$K4XO"$7$?JQ?t(B
-* Session Manager Variables::   $B%;%C%7%g%s%^%M!<%8%c$K4XO"$7$?JQ?t(B
 * Hooks::                       $B%U%C%/(B
 * Other Variables::             $B$=$NB>$NJQ?t(B
 
@@ -177,7 +175,6 @@ Shimbun Library
 * Nnshimbun::                   Gnus $B$r%&%'%V%V%i%&%6$K$9$k(B!
 * Mew Shimbun::                 Mew $B$G?7J9$rFI$`(B
 * Shimbun with Wanderlust::     Wanderlust $B$G?7J9$rFI$`(B
-* Shimbun local mode::          $B?7J9$N<hF@$K%7%'%k%9%/%j%W%H$r;H$&(B
 * Shimbun Sites::               $B?7J9$,FI$a$k%5%$%H(B
 * Shimbun Basics::              $B?7J9%b%8%e!<%k$N:n$jJ}(B
 
@@ -1916,7 +1913,6 @@ HTML $B%U%!%$%k$r3+$$$F$$$k(B Emacs $B$N%P%C%U%!$NL>A0$rL@<(E*$K;XDj$7$F%P%C%
 * Using Namazu::                Namazu $B$G%U%!%$%k$r8!:w$9$k(B
 * Octet::                       application/octet-stream $B%G!<%?$r8+$k(B
 * Frame Local Buffers::         $BB??t$N%;%C%7%g%s$r%U%l!<%`$G%0%k!<%WJ,$1$9$k(B
-* Session Manager::             $B%;%C%7%g%s$NJ]B8$HFI$_$3$_(B
 @end menu
 
 @node Using Search Engines
@@ -2379,73 +2375,6 @@ Emacs-w3m $B$O$?$/$5$s$N%Z!<%8$rF1;~$K8+$k$?$a$N$$$/$D$+$N5!G=$rDs6!$7$^$9!#(B
 @code{w3m-fb-mode} $B$O?7$7$$%U%l!<%`$r:n$i$J$$$N$G!"$=$l$i$O2?$i$+$NJ}K!(B
 $B$G$"$J$?<+?H$,:n$kI,MW$,$"$j$^$9!#(B
 
-@node Session Manager
-@section $B%;%C%7%g%s$NJ]B8$HFI$_$3$_(B
-
-emacs-w3m $B$G$O%;%C%7%g%sAH$rJ]B8$7$?$jFI$_$3$s$@$j$9$k$3$H$,$G$-$^$9!#(B
-
-@kindex @kbd{M-S}
-$B>-Mh;H$&$?$a$K!":#3+$$$F$$$k%;%C%7%g%sAH$rJ]B8$G$-$^$9!#(B @kbd{M-S} $B$r2!$7(B
-$B$F!"$=$N%;%C%7%g%s>pJs$KL>A0$r$D$1$F$/$@$5$$!#(B
-
-@kindex @kbd{M-s}
-@findex w3m-session-select
-$B$=$&$9$k$H<!$O!"J]B8$7$?%;%C%7%g%sAH$rI|5"$7$?$/$J$k$H;W$$$^$9!#(B
-@kbd{M-s} $B$r2!$9$H%;%C%7%g%sA*Br%a%K%e!<$,3+$-$^$9!#$3$N%a%K%e!<$N%-!<%P(B
-$B%$%s%I$O0J2<$N$h$&$K$J$C$F$$$^$9!#(B
-
-@table @asis
-@item @kbd{@key{RET}}
-@findex w3m-session-select-select
-$BA*Br$5$l$F$$$k%;%C%7%g%sAH$K4^$^$l$kA4$F$N%;%C%7%g%s$r3+$-$^$9!#(B
-
-@item @kbd{M-s}
-@findex w3m-session-select-open-session-group
-$BA*Br$5$l$F$$$k%;%C%7%g%sAH$N>\:Y$J%a%K%e!<$r3+$-$^$9!#(B $B$3$l$r;H$C$F%;%C%7%g(B
-$B%sAH$NCf$N%;%C%7%g%s$r0l$D$:$D3+$/$3$H$,$G$-$^$9!#(B
-
-@item @kbd{d}
-@findex w3m-session-select-delete
-$BA*Br$5$l$F$$$k%;%C%7%g%sAH!"$^$?$O%;%C%7%g%s$r:o=|$7$^$9!#(B
-
-@item @kbd{r}
-@findex w3m-session-select-rename
-$BA*Br$5$l$F$$$k%;%C%7%g%sAH$NL>A0$rJQ99$7$^$9!#(B
-
-@item @kbd{s}
-@findex w3m-session-select-save
-$B8=:_3+$$$F$$$kA4$F$N%;%C%7%g%s$rJ]B8$7$^$9!#(B @kbd{M-S} $B$HF1$8$G$9!#(B
-
-@item @kbd{n}
-@findex w3m-session-select-next
-$B%+!<%=%k$r<!$N%;%C%7%g%sAH$KF0$+$7$^$9!#(B
-
-@item @kbd{p}
-@findex w3m-session-select-previous
-$B%+!<%=%k$rA0$N%;%C%7%g%sAH$KF0$+$7$^$9!#(B
-
-@item @kbd{q}
-@findex w3m-session-select-quit
-$B%;%C%7%g%sA*Br%a%K%e!<$r=*N;$7$^$9!#(B
-@end table
-
-@vindex w3m-session-deleted-save
-@vindex w3m-session-automatic-save
-emacs-w3m $B$O%;%C%7%g%sAH$r<+F0E*$KJ]B8$9$k$3$H$,$G$-$^$9!#(B
-@code{w3m-session-deleted-save} $B$,(B non-@code{nil} $B$N;~!"(Bemacs-w3m $B$OJD$8(B
-$B$i$l$?%;%C%7%g%s$r<+F0E*$KJ]B8$7$^$9!#(B $B$3$l$O!"$&$C$+$j%;%C%7%g%s$rJD$8(B
-$B$F$7$^$C$?;~$J$I$KJXMx$G$7$g$&!#(B @code{w3m-session-automatic-save} $B$,(B
-non-@code{nil} $B$J$i$P!"(B emacs-w3m $B=*N;;~$K3+$$$F$$$?A4$F$N%;%C%7%g%s$r<+(B
-$BF0E*$KJ]B8$7$^$9!#(B
-
-@vindex w3m-session-load-last-sessions
-$B<+F0E*$KJ]B8$5$l$F$$$k%;%C%7%g%sAH$N$3$H$rK:$l$F$7$^$C$F!"$J$K$+$*$b$7$m(B
-$B$$%Z!<%8$N(B URL $B$rK:$l$F$7$^$&$H$$$&$3$H$,;~!9$"$j$^$9!#(B emacs-w3m $B$O$3$&(B
-$B$$$&$3$H$rKI;_$9$k$3$H$,$G$-$^$9!#(B @code{w3m-session-load-last-sessions}
-$B$,(B @code{auto} $B$G$"$l$P!"(B emacs-w3m $B$O<+F0E*$KA02s3+$$$F$$$?%;%C%7%g%s$?(B
-$B$A$rI|5"$7$^$9!#(B @code{w3m-session-load-last-sessions} $B$,(B @code{ask} $B$G(B
-$B$"$l$P!"(B emacs-w3m $B$O$=$l$rI|5"$9$k$+$I$&$+$r$?$:$M$^$9!#(B ($B%G%U%)%k%H$O(B
-@code{nil} $B$K$J$C$F$$$^$9!#(B)
 
 @node Customizable Variables
 @chapter $B%G%U%)%k%H$N$^$^$G$b7k9=NI$$$H;W$&$1$l$I(B
@@ -2504,7 +2433,6 @@ Emacs-w3m $B$,5/F0$9$k$H!"(B@code{w3m-init-file} $B%U%!%$%k$rFI$_9~$_$^$9!#%G
 * Perldoc Variables::           Perldoc $B$K4XO"$7$?JQ?t(B
 * Namazu Variables::            Namazu $B$K4XO"$7$?JQ?t(B
 * Octet Variables::             Octet $B$K4XO"$7$?JQ?t(B
-* Session Manager Variables::   $B%;%C%7%g%s%^%M!<%8%c$K4XO"$7$?JQ?t(B
 * Hooks::                       $B%U%C%/(B
 * Other Variables::             $B$=$NB>$NJQ?t(B
 @end menu
@@ -3676,41 +3604,6 @@ the value of @code{namazu-search-num} if any, or @code{30}.
 
 There is no user option for the moment.
 
-* Session Manager Variables::   
-@node Session Manager Variables
-@section $B%;%C%7%g%s%^%M!<%8%c$K4XO"$7$?JQ?t(B
-@cindex Variables related to session manager
-
-@table @code
-@item w3m-session-file
-@vindex w3m-session-file
-$B%;%C%7%g%s$rJ]B8$9$k%U%!%$%kL>!#(B
-
-@item w3m-session-time-format
-@vindex w3m-session-time-format
-$BJ]B8;~4V$N7A<0!#(B
-
-@item w3m-session-automatic-title
-@vindex w3m-session-automatic-title
-emacs-w3m $B=*N;;~$N<+F0J]B8%;%C%7%g%s$N%?%$%H%k!#(B
-
-@item w3m-session-deleted-title
-@vindex w3m-session-deleted-title
-$B%P%C%U%!$rJD$8$?;~$N<+F0J]B8%;%C%7%g%s$N%?%$%H%k!#(B
-
-@item w3m-session-deleted-keep-number
-@vindex w3m-session-deleted-keep-number
-$B%P%C%U%!$rJD$8$?;~$N<+F0J]B8%;%C%7%g%s$r$$$/$DJ]B8$7$F$*$/$+!#(B
-
-@item w3m-session-automatic-keep-number
-@vindex w3m-session-automatic-keep-number
-emacs-w3m $B=*N;;~$N<+F0J]B8%;%C%7%g%s$r$$$/$DJ]B8$7$F$*$/$+!#(B
-
-@item w3m-session-unknown-title
-@vindex w3m-session-unknown-title
-$B%?%$%H%k$,;XDj$5$l$J$+$C$?;~$K;H$o$l$kJ8;zNs!#(B
-@end table
-
 @node Hooks
 @section $B%U%C%/(B
 @cindex $B%U%C%/(B
@@ -4538,7 +4431,6 @@ Lisp $B%W%m%0%i%`$r=q$/$3$H$,$G$-$kI,MW$,$"$j$^$9(B)$B!#(B
 * Nnshimbun::                   Gnus $B$r%&%'%V%V%i%&%6$K$9$k(B!
 * Mew Shimbun::                 Mew $B$G?7J9$rFI$`(B
 * Shimbun with Wanderlust::     Wanderlust $B$G?7J9$rFI$`(B
-* Shimbun local mode::          $B?7J9$N<hF@$K%7%'%k%9%/%j%W%H$r;H$&(B
 * Shimbun Sites::               $B?7J9$,FI$a$k%5%$%H(B
 * Shimbun Basics::              $B?7J9%b%8%e!<%k$N:n$jJ}(B
 @end menu
@@ -5096,50 +4988,6 @@ Wanderlust $B$K$O(B ELMO $B%b%8%e!<%k$N0l$D$H$7$F(B @samp{elmo-shimbun} $B$
 $B$G(B @samp{shimbun} $B$rFI$`$3$H$,$G$-$^$9(B (@pxref{Shimbun Folder, ,Shimbun
 Folder, wl-ja, The Wanderlust-ja Manual})$B!#(B
 
-@node Shimbun local mode
-@section $B?7J9$N<hF@$K%7%'%k%9%/%j%W%H$r;H$&(B
-
-$B$?$/$5$s$N?7J9$rFI$s$G$$$k$H!"?7$7$$5-;v$r%A%'%C%/$9$k$N$K$$$/$i$+;~4V$,(B
-$B$+$+$k$G$7$g$&!#$=$l$O(B emacs-w3m $B$,:w0z$r0l$D$:$D<hF@$9$k$+$i$G$9!#$3$l(B
-$B$r9bB.$K9T$J$$$?$$$J$i!":w0z$N<hF@$K%7%'%k%9%/%j%W%H$r;H$&$3$H$,$G$-$^$9!#(B
-$B%9%/%j%W%H$O<jF0$G(B ($BNc$($P(B Emacs $B$NCf$+$i(B) $B:nF0$5$;$F$bNI$$$7!"(Bcron $B$N$h(B
-$B$&$J%9%1%8%e!<%i$r2p$7$F<+F0$GAv$i$;$k$3$H$b$G$-$^$9!#:w0z$OFCJL$JL>A0$N(B
-$B%U%!%$%k$K%;!<%V$5$l!"$=$N8e(B emacs-w3m $B$O(B w3m $B$r8F$VBe$o$j$K$=$l$i$N%U%!(B
-$B%$%k$r;H$&$h$&$K$J$j$^$9!#(B
-
-$B0J2<$NJQ?t$G!"$=$N!V%m!<%+%k%b!<%I!W$r@)8f$7$^$9(B:
-
-@table @code
-@item shimbun-use-local
-@vindex shimbun-use-local
-$B$3$l$r(B @code{t} $B$K@_Dj$9$k$3$H$K$h$C$F%m!<%+%k%b!<%I$rM-8z$K$7$^$9!#$=$&(B
-$B$9$k$H!"$b$7%m!<%+%k%U%!%$%k$H$7$F:w0z$,MQ0U$G$-$F$$$l$P!"(Bemacs-w3m $B$O:G(B
-$B=i$K$=$l$r%A%'%C%/$7$^$9!#$b$7$=$l$,8+$D$+$i$J$+$C$?$i!"DL>oDL$j(B w3m $B$r(B
-$BDL$7$F<hF@$7$^$9!#(B
-
-@item shimbun-local-path
-@vindex shimbun-local-path
-$B?7J9$N(B ($B:w0z$N(B) $B%U%!%$%k$r3JG<$9$k%G%#%l%/%H%j$G$9!#%G%U%)%k%H(B
-$B$O(B @code{w3m-default-save-directory} $B$G$9!#(B
-@end table
-
-$B:w0z$N$?$a$N%U%!%$%k$NL>A0$O!"(BURL $B$N(B MD5 $B$r:G=i$N(B 10 $BJ8;z$K@Z$j5M$a$?$b(B
-$B$N$N8e$m$K(B @samp{_shimbun} $B$H$$$&J8;zNs$r$/$C$D$1$?$b$N$K$J$j$^$9!#<!$N(B
-$B$h$&$K(B Emacs $B$G4JC1$K:w0z$N$?$a$N%U%!%$%k$r@8@.$9$k$3$H$,$G$-$^$9(B:
-
-@lisp
-(concat (substring (md5 "http://example/feed") 0 10) "_shimbun")
-@end lisp
-
-@findex nnshimbun-generate-download-script
-Gnus $B$H(B @samp{nnshimbun} $B$r;H$C$F$$$k?M$?$A$N$?$a$K!"%7%'%k%9%/%j%W%H$r(B
-$B@8@.$9$k4X?t$,$9$G$K$"$j$^$9!#$=$l$r;H$C$F!"8=:_9VFI$7$F$$$k$9$Y$F(B
-$B$N(B shimbun $B%0%k!<%W$N:w0z$r%@%&%s%m!<%I$9$k$3$H$,$G$-$^$9!#C1(B
-$B$K(B @code{nnshimbun-generate-download-script} $B$r8F$s$G$/$@$5$$!#$9$k$H?7(B
-$B$7$$%P%C%U%!$K%7%'%k%9%/%j%W%H$,@8@.$5$l$k$N$G!"8e$G%;!<%V$7$F$/$@$5$$!#(B
-$B@\F,0z?t$rIU$1$F$=$N4X?t$r8F$V$H!":w0z$N<hF@$rJB9T$7$F9T$J$&$?$a$K!"$9$Y(B
-$B$F$N(B w3m $B8F$S=P$7$K(B @samp{&} $B$rIU$1$^$9!#(B
-
 @node Shimbun Sites
 @section $B?7J9$,FI$a$k%5%$%H(B
 
@@ -5450,34 +5298,7 @@ perlentaucher-de.aktuell
 rediff.news
 
 @item @uref{http://www.slashdot.org/, Slashdot}
-slashdot.frontpage slashdot.apple slashdot.askslashdot slashdot.books
-slashdot.developers slashdot.games slashdot.hardware slashdot.interviews
-slashdot.IT slashdot.linux slashdot.mobile slashdot.politics
-slashdot.science
-
-Slashdot shimbun $B$N%3%a%s%H$NItJ,$r@_Dj$9$k$?$a$N0J2<$NJQ?t$,$"$j$^$9(B:
-
-@table @code
-@item shimbun-slashdot-get-comments
-@vindex shimbun-slashdot-get-comments
-$B$b$7(B @code{t} $B$K@_Dj$5$l$F$$$k$H(B ($B$=$l$,%G%U%)%k%H$G$9(B)$B!"$9$Y$F$N5-;v$N(B
-$B%3%a%s%H$r<hF@$7$^$9!#$=$l$i$O%U%)!<%`%U%#!<%IJ8;z(B (``^L'' $B$N$3$H(B) $B$G%$(B
-$B%s%H%m!&%F%-%9%H$+$iJ,N%$5$l$^$9!#$=$l$i$r8+$k$K$O!"$$$D$b$N$h$&$K5-;v%P%C(B
-$B%U%!$r%9%/%m!<%k$7$F$/$@$5$$(B (Gnus $B$G$O(B ``Next page'' $B%\%?%s(B
-$B$H(B ``Previous page'' $B%\%?%s$r;H$&$3$H$,$G$-$^$9(B)$B!#$3$NJQ?t(B
-$B$r(B @code{nil} $B$K@_Dj$9$k$H!"5-;v$N%3%a%s%H$r<hF@$7$J$/$J$j$^$9!#(B
-
-@item shimbun-slashdot-comment-threshold
-@vindex shimbun-slashdot-comment-threshold
-$BI=<($5$l$k%3%a%s%H$NogCM$G$9(B ($B%G%U%)%k%H$O(B 3)$B!#(B-1 ($B$9$Y$F$N%3%a%s%H(B) $B$+(B
-$B$i(B 5 ($B:G9b%l!<%H(B) $B$^$G$N4V$N?t$K$7$F$/$@$5$$!#(B
-
-@item shimbun-slashdot-comment-display
-@vindex shimbun-slashdot-comment-display
-$B%3%a%s%H$rI=<($9$k7A<0$G$9(B ($B%G%U%)%k%H$O(B ``flat'')$B!#(B``flat''$B!"(B
-``thread'' $B$^$?$O(B ``nested'' $B$N$I$l$+$K$7$F$/$@$5$$!#$3$l$O%7%s%\%k$G$O(B
-$B$J$/J8;zNs$G$J$1$l$P$J$j$^$;$s!#(B
-@end table
+slashdot.frontpage
 
 @item @uref{http://slashdot.jp/, Slashdot Japan}
 slashdot-jp.story slashdot-jp.askslashdot slashdot-jp.bookreview
@@ -5995,32 +5816,6 @@ shimbun-rss-hash-* $B$HF1MM$N$d$jJ}$GJQ(B
 $B?t(B @code{shimbun-atom-hash-group-path-alist} ($B$R$g$C$H$9$k(B
 $B$H(B @code{shimbun-atom-hash-x-face-alist} $B$J$I$b(B) $B$r@_Dj$7$F$/$@$5$$!#%P%C(B
 $B%/%(%s%IL>$O(B @samp{atom-hash} $B$G$9!#(B
-
-@item $B%3%s%F%s%D$N$J$$(B RSS $B%U%#!<%I(B
-$BB?$/$N%U%#!<%I$K$O5-;v$N40A4$J%3%s%F%s%D$,L5$$$+!"$^$?$O$$$B$o$k$K>.=P$7(B
-$B$K$7$^$9!#%5%$%H$,$A$c$s$H5-;v$r=q$+$:$K!"$=$N$h$&$J%U%#!<%I$7$+Ds6!$7$J(B
-$B$$>l9g$G$b!"B?$/$N>l9g(B @samp{rss-blogs} $B$r;H$C$F@Z$jH4$1$k$3$H$,$G$-$^$9!#(B
-$B@_Dj$O(B @samp{rss-hash} $B$N$b$N$H;w$F$$$^$9!#Nc$r<($7$^$7$g$&(B:
-
-@lisp
-(setq shimbun-rss-blogs-group-url-regexp
-  '(("first-feed" "http://example/wordpressfeed")
-    ("second-feed" "http://example/somefeed"
-     "<div name=\"content\">" "<div name=\"comments\">")
-    ("third-feed" "http://example/someotherfeed" 'none)))
-@end lisp
-
-$B:G=i$NFs$D$N%"%$%F%`$O%U%#!<%I$NL>A0$H(B URL $B$G$9!#$=$N%U%#!<%I$,;X$7<((B
-$B$9(B HTML $B%Z!<%8$K$*$$$F!"<B:]$N%3%s%F%s%D$N;O$a$H=*$j$rC5$9$?$a$NFs$D$N@5(B
-$B5,I=8=$r!"G$0U$GM?$($k$3$H$,$G$-$^$9!#$=$3$GC1$K(B @code{none} $B$H$$$&%7%s(B
-$B%\%k$r;H$&$H!"$$$+$J$k_I2a$b9T$J$o$l$^$;$s!#(B
-
-$B2C$($F!"(B@samp{rss-blogs} $B$O$$$/$D$+$N%]%T%e%i!<$J%V%m%0!&%(%s%8%s$r<+F0(B
-$BE*$K07$&$3$H$,$G$-$^$9!#$9$J$o$A(B Google $B$N(B Blogger/Blogspot ($B%3%a%s%H!&(B
-$B%U%#!<%I$r4^$_$^$9(B)$B!"(BWordPress$B!"$*$h$S(B TypePad $B$G$9!#%U%#!<%I$r<h$j4s$;(B
-$B$k%5%$%H$,$=$l$i$N0l$D$r;H$C$F$$$k$J$i(B (@code{generator} $B%?%0$rD/$a$l$P(B
-$B$o$+$j$^$9(B)$B!"C1$KG$0U$N%Q%i%a!<%?$r>JN,$9$k$@$1$G!"<+F0E*$K%3%s%F%s%D$r(B
-$B@Z$j=P$=$&$H$9$k$G$7$g$&!#(B
 
 @item Wiki $B%3%s%F%s%D(B
 $B1\Mw$7$?$$(B Wiki $B$N(B URL $B$rD4$Y$F!"0J2<$N$h$&$K@_Dj$7$F;H$$$^$9!#(B
@@ -6886,8 +6681,6 @@ Romain Francoise
 $B;32,(B $B9nH~(B
 @item
 $BBgOB(B $B@5Ip(B
-@item
-$B@DED(B $BD>Bg(B
 @end itemize
 
 @node Index
