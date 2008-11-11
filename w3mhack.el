@@ -1,6 +1,6 @@
 ;;; w3mhack.el --- a hack to setup the environment for building w3m
 
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ;; TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Author: Katsumi Yamaoka <yamaoka@jpl.org>
@@ -822,30 +822,22 @@ NOTE: This function must be called from the top directory."
 	       'message
 	       (cond ((featurep 'mule)
 		      ;; Encode messages to terminal.
-		      (let ((coding
-			     (or (and (boundp 'current-language-environment)
-				      (string-match
-				       "\\`Japanese"
-				       current-language-environment)
-				      (boundp 'locale-coding-system)
-				      locale-coding-system)
-				 'iso-2022-7bit)))
-			(byte-compile
-			 (cond ((featurep 'xemacs)
-				`(lambda (fmt &rest args)
-				   (unless (and (string-equal fmt "%s clean")
-						(equal (car args)
-						       buffer-file-name))
-				     (funcall ,si:message "%s"
-					      (encode-coding-string
-					       (apply 'format fmt args)
-					       ',coding)))))
-			       (t
-				`(lambda (fmt &rest args)
+		      (byte-compile
+		       (cond ((featurep 'xemacs)
+			      `(lambda (fmt &rest args)
+				 (unless (and (string-equal fmt "%s clean")
+					      (equal (car args)
+						     buffer-file-name))
 				   (funcall ,si:message "%s"
 					    (encode-coding-string
 					     (apply 'format fmt args)
-					     ',coding))))))))
+					     'iso-2022-7bit)))))
+			     (t
+			      `(lambda (fmt &rest args)
+				 (funcall ,si:message "%s"
+					  (encode-coding-string
+					   (apply 'format fmt args)
+					   'iso-2022-7bit)))))))
 		     ((featurep 'xemacs)
 		      (byte-compile
 		       `(lambda (fmt &rest args)
