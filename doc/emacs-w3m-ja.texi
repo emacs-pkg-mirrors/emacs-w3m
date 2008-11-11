@@ -1757,6 +1757,7 @@ Search'' のページを開いてあるならば、``Goo'' に続けて @kbd{@key{TAB}
 
 @node Downloading
 @section ファイルをダウンロードする
+@cindex Downloading files
 
 どんなウェブページやファイルも emacs-w3m でダウンロード (すなわち取得、
 表示ではありません) できます。単にダウンロードしたいリンクにポイントを置
@@ -1777,9 +1778,16 @@ Search'' のページを開いてあるならば、``Goo'' に続けて @kbd{@key{TAB}
 @kindex d (Lynx-like キーマップ)
 @kindex D (Info-like キーマップ)
 @findex w3m-download-this-url
-@cindex Downloading files
 ポイントのところにあるリンクが指し示すファイルかページをダウンロードしま
 す (@code{w3m-download-this-url})。
+
+@item @kbd{M-d} (Lynx-like キーマップ)
+@itemx @kbd{d} (Info-like キーマップ)
+@kindex M-d (Lynx-like キーマップ)
+@kindex d (Info-like キーマップ)
+@findex w3m-download
+URL の内容をローカルファイルにダウンロードします (@code{w3m-download})。
+その URL とローカルファイルの名前の入力を求められます。
 @end table
 
 @node Submitting Forms
@@ -3185,56 +3193,61 @@ It influences only when a new emacs-w3m buffer is created.
 @table @code
 @item w3m-default-display-inline-images
 @vindex w3m-default-display-inline-images
-Non-@code{nil} means display images inline in emacs-w3m buffers.  You
-can toggle the visibility of images with the
-@code{w3m-toggle-inline-images} command.  See also
-@code{w3m-toggle-inline-images-permanently}.
+非@code{nil} ならば、インライン画像を emacs-w3m のバッファに表示します。
+画像表示の ON/OFF は @code{w3m-toggle-inline-images} で切り替えられます。
+@code{w3m-toggle-inline-images-permanently} も参照してください。
 
 @item w3m-favicon-cache-expire-wait
 @vindex w3m-favicon-cache-expire-wait
-The cache will be expired after specified seconds passed since
-retrieval.  If this variable is @code{nil}, never expired.
+取得からこの変数で指定された秒数以上経過したキャッシュは削除されます。こ
+の変数が @code{nil} ならば、削除されることはありません。
 
 @item w3m-favicon-cache-file
 @vindex w3m-favicon-cache-file
-Filename of saving favicon cache.  It defaults to the file named
-@file{.favicon} under the directory specified by the
-@code{w3m-profile-directory} variable.
+favicon のキャッシュを保存するファイル名。デフォルトは、変数
+@code{w3m-profile-directory} で指定されたディレクトリ下の
+@file{.favicon} という名前のファイルです。
 
 @item w3m-favicon-size
 @vindex w3m-favicon-size
-Size of favicon. This value is used as geometry argument for
-@code{convert}.
+favicon のサイズ。 この値は、 @code{convert} への geometry 引数として使わ
+れます。
 
 @item w3m-favicon-type
 @vindex w3m-favicon-type
-Image type of display favicon.
+favicon を表示するのに使われる画像の種類。
 
 @item w3m-favicon-use-cache-file
 @vindex w3m-favicon-use-cache-file
-If non-@code{nil}, use favicon cache file.
+非@code{nil} ならば、 favicon のキャッシュファイルを使います。
+
+@item w3m-favicon-default-background
+@vindex w3m-favicon-default-background
+favicon 画像の透過色として使われる色の名前。 @code{nil} であれば、 Emacs
+のフレームの背景色を使う。 空文字は特別で、ヘッダラインかモードラインかの
+favicon が表示されているほうの背景色に置換えられる。 この変数は、 Emacs
+22 以上でしか効力を持たないことに注意。
 
 @item w3m-icon-directory
 @vindex w3m-icon-directory
-Directory where emacs-w3m should find icon files.
+emacs-w3m がアイコンを探すディレクトリ。
 
 @item w3m-imagick-convert-program
 @vindex w3m-imagick-convert-program
-Program name of ImageMagick's @samp{convert}.
+ImageMagick の @samp{convert} のプログラム名。
 
 @item w3m-treat-image-size
 @vindex w3m-treat-image-size
-Non-@code{nil} means let the @samp{w3m} command mind the ratio of the
-size of images and text.  The default value is @code{t}.
+非@code{nil} ならば、 @samp{w3m} が画像とテキストの比率を考慮します。デフォ
+ルトは @code{t} です。
 
-If it is non-@code{nil}, the @samp{w3m} command will make a
-@samp{halfdump} which reserves rectangle spaces in which images will be
-put, and also @samp{alt} texts will be truncated or padded with spaces
-so that their display width will be the same as the width of images.
+非@code{nil} ならば、 @samp{w3m} 画像が置かれる場所を確保した
+@samp{halfdump} を生成し、@samp{alt} テキストは画像の表示幅に等しくなるよ
+うに切り詰められる、あるいはスぺースを詰められます。
 
-See also @code{w3m-pixels-per-character} and @code{w3m-pixels-per-line}.
-Those values will be passed to the @samp{w3m} command in order to
-compute columns and lines which images occupy.
+@code{w3m-pixels-per-character} と @code{w3m-pixels-per-line} も参照して
+ください。これらの値が画像が占める桁と行とを計算するために @samp{w3m} コ
+マンドに渡されます。
 
 @item w3m-pixels-per-character
 @vindex w3m-pixels-per-character
@@ -3292,6 +3305,12 @@ or reload the current page in an emacs-w3m buffer.
 Non-@code{nil} means show favicon images if they are available.  It will
 be set to @code{nil} automatically if ImageMagick's @code{convert}
 program does not support the ico format.
+
+@item w3m-image-default-background
+@vindex w3m-image-default-background
+画像の透過色として使われる色の名前。 @code{nil} ならば、Emacs のフレー
+ムの背景色が使われる。空文字("")は特別に、バッファの背景色に置き換えら
+れる。 この変数は Emacs 22 以降でのみ有効である。
 @end table
 
 @node Form Variables
@@ -4002,19 +4021,10 @@ If the prefix arg is given, all images are considered to be safe."
 @node VM
 @section VM (vieW maiL) は Wanderlust にあらず
 
-VM は現在 emacs-w3m をサポートしています。8.x 以上のバージョンの VM を使っ
-てください。それらは @uref{http://www.nongnu.org/viewmail/,
-VM ホームページ} にあります。以前 emacs-w3m に含まれてい
-た @file{vm-w3m.el} と @file{vm-7.19.patch} は VM に統合されました。
-
-@quotation
-ヒント: VM のどれかのバッファにいるときに、プレゼンテーション・バッファ
-の画像表示をトグルに切り換えたい場合は、例えば以下を使ってください:
-
-@lisp
-(define-key vm-mode-map "T" 'vm-w3m-safe-toggle-inline-images)
-@end lisp
-@end quotation
+VM で html メールを表示する機能を提供する vm-w3m.el モジュールとパッチ
+は VM の新しいメインテイナーに引き継がれましたが、まだ VM の安定版に現れ
+ていません。@uref{http://www.nongnu.org/viewmail/, VM ホームページ} を
+訪ねてみてください。
 
 @node Frequently Asked Questions
 @chapter 必ず答があるとは限らない
@@ -5276,12 +5286,6 @@ laut-de.platten_rock
 n24-de.boerse n24-de.boulevard n24-de.nachrichten n24-de.netnews
 n24-de.politik n24-de.sport n24-de.wirtschaft
 
-@item @uref{http://ohmynews.co.jp/, オーマイニュース}
-ohmynews-jp.news ohmynews-jp.watashi ohmynews-jp.life ohmynews-jp.shakai
-ohmynews-jp.seiji ohmynews-jp.keizai ohmynews-jp.kaigai
-ohmynews-jp.culture ohmynews-jp.style ohmynews-jp.sports ohmynews-jp.it
-ohmynews-jp.local
-
 @item @uref{http://opentechpress.jp/, Open Tech Press}
 opentechpress-jp.general opentechpress-jp.enterprise
 opentechpress-jp.opensource opentechpress-jp.security
@@ -5294,7 +5298,33 @@ perlentaucher-de.aktuell
 rediff.news
 
 @item @uref{http://www.slashdot.org/, Slashdot}
-slashdot.frontpage
+slashdot.frontpage slashdot.apple slashdot.askslashdot slashdot.books
+slashdot.developers slashdot.games slashdot.hardware slashdot.interviews
+slashdot.IT slashdot.linux slashdot.mobile slashdot.politics
+slashdot.science
+
+Slashdot shimbun のコメントの部分を設定するための以下の変数があります:
+
+@table @code
+@item shimbun-slashdot-get-comments
+@vindex shimbun-slashdot-get-comments
+もし @code{t} に設定されていると (それがデフォルトです)、すべての記事の
+コメントを取得します。それらは記事バッファで「次のページ」ボタンを押すと
+見ることができるようにするために、 LF 文字でイントロ・テキストから分離さ
+れます。この変数を @code{nil} に設定すると、記事のコメントを取得しなくな
+ります。
+
+@item shimbun-slashdot-comment-threshold
+@vindex shimbun-slashdot-comment-threshold
+表示されるコメントの閾値です (デフォルトは 3)。-1 (すべてのコメント) か
+ら 5 (最高レート) までの間の数にしてください。
+
+@item shimbun-slashdot-comment-display
+@vindex shimbun-slashdot-comment-display
+コメントを表示する形式です (デフォルトは ``flat'')。``flat''、
+``thread'' または ``nested'' のどれかにしてください。これはシンボルでは
+なく文字列でなければなりません。
+@end table
 
 @item @uref{http://slashdot.jp/, Slashdot Japan}
 slashdot-jp.story slashdot-jp.askslashdot slashdot-jp.bookreview
@@ -5861,8 +5891,9 @@ vinelinux.errata.2x.i386 vinelinux.errata.2x.ppc
 vinelinux.errata.2x.sparc vinelinux.errata.2x.alpha
 vinelinux.errata.1x
 
-@item @uref{http://www.mmz.kantei.go.jp/, 福田内閣メールマガジン}
-kantei.m-magazine-en kantei.m-magazine-ja kantei.m-magazine-en.abe
+@item @uref{http://www.mmz.kantei.go.jp/, 麻生内閣メールマガジン}
+kantei.m-magazine-en kantei.m-magazine-ja kantei.m-magazine-en.fukuda
+kantei.m-magazine-ja.fukuda kantei.m-magazine-en.abe
 kantei.m-magazine-ja.abe kantei.m-magazine-en.koizumi
 kantei.m-magazine-ja.koizumi
 
