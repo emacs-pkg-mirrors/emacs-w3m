@@ -47,9 +47,6 @@
 
 (luna-define-method initialize-instance :after ((shimbun shimbun-rss)
 						&rest init-args)
-  (shimbun-rss-initialize-ignored-subject shimbun))
-
-(defun shimbun-rss-initialize-ignored-subject (shimbun)
   (shimbun-rss-set-ignored-subject-internal
    shimbun
    (symbol-value (intern-soft (format "shimbun-%s-ignored-subject"
