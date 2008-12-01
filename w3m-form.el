@@ -348,12 +348,11 @@ If no field in forward, return nil without moving."
 	(mapconcat (lambda (elem)
 		     (setq elem (cdr elem))
 		     (format "%s=%s"
-			     (w3m-url-encode-string (car elem) coding t)
+			     (w3m-url-encode-string (car elem) coding)
 			     (w3m-url-encode-string (if (stringp (cdr elem))
 							(cdr elem)
 						      "")
-						    coding
-						    t)))
+						    coding)))
 		   bufs "&")))))
 
 (defun w3m-form-resume (forms)
@@ -1255,36 +1254,6 @@ textarea, or type \
 `\\<w3m-form-input-textarea-map>\\[w3m-form-input-textarea-exit]' to quit \
 textarea")))
 
-(eval-and-compile
-  (defalias 'w3m-same-window-p
-    (if (featurep 'xemacs)
-	(lambda (buffer-name)
-	  "Return non-nil if a buffer named BUFFER-NAME would be shown in the \"same\" window.
-This function returns non-nil if `display-buffer' or
-`pop-to-buffer' would show a buffer named BUFFER-NAME in the
-selected rather than \(as usual\) some other window.  See
-`same-window-buffer-names' and `same-window-regexps'."
-	  (cond
-	   ((not (stringp buffer-name)))
-	   ;; The elements of `same-window-buffer-names' can be buffer
-	   ;; names or cons cells whose cars are buffer names.
-	   ((and (boundp 'same-window-buffer-names)
-		 (member buffer-name same-window-buffer-names)))
-	   ((and (boundp 'same-window-buffer-names)
-		 (assoc buffer-name same-window-buffer-names)))
-	   ((and (boundp 'same-window-regexps)
-		 (save-match-data
-		   (catch 'found
-		     (dolist (regexp same-window-regexps)
-		       ;; The elements of `same-window-regexps' can be regexps
-		       ;; or cons cells whose cars are regexps.
-		       (when (or (and (stringp regexp)
-				      (string-match regexp buffer-name))
-				 (and (consp regexp) (stringp (car regexp))
-				      (string-match (car regexp) buffer-name)))
-			 (throw 'found t)))))))))
-      'same-window-p)))
-
 (defun w3m-form-input-textarea (form hseq)
   (let* ((info  (w3m-form-textarea-info))
 	 (value (w3m-form-get form (car info)))
@@ -1361,9 +1330,10 @@ selected rather than \(as usual\) some other window.  See
       ;; the buffer name "*w3m form textarea*" to `same-window-buffer-names'
       ;; (that is available only in Emacs).
       ;; cf. http://article.gmane.org/gmane.emacs.w3m/7797
-      (unless (w3m-same-window-p (buffer-name (if (consp buffer)
-						  (cdr buffer)
-						buffer)))
+      (unless (w3m-static-unless (featurep 'xemacs)
+		(same-window-p (buffer-name (if (consp buffer)
+						(cdr buffer)
+					      buffer))))
 	(condition-case nil
 	    (split-window cur-win (if (> size 0) size window-min-height))
 	  (error
@@ -1511,8 +1481,6 @@ selected rather than \(as usual\) some other window.  See
   (define-key w3m-form-input-select-keymap "\C-c\C-k"
     'w3m-form-input-select-exit)
   (define-key w3m-form-input-select-keymap "q"
-    'w3m-form-input-select-exit)
-  (define-key w3m-form-input-select-keymap "\C-g"
     'w3m-form-input-select-exit)
   (define-key w3m-form-input-select-keymap "h" 'backward-char)
   (define-key w3m-form-input-select-keymap "j" 'next-line)
@@ -1688,8 +1656,6 @@ selected rather than \(as usual\) some other window.  See
   (define-key w3m-form-input-map-keymap "\C-c\C-k"
     'w3m-form-input-map-exit)
   (define-key w3m-form-input-map-keymap "q"
-    'w3m-form-input-map-exit)
-  (define-key w3m-form-input-map-keymap "\C-g"
     'w3m-form-input-map-exit)
   (define-key w3m-form-input-map-keymap "h" 'backward-char)
   (define-key w3m-form-input-map-keymap "j" 'next-line)
