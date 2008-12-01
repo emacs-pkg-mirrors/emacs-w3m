@@ -1,8 +1,8 @@
 ;;; sb-rss.el --- shimbun backend for RSS (Rich Site Summary).
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 ;; Koichiro Ohba <koichiro@meadowy.org>
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 ;; NAKAJIMA Mikio <minakaji@osaka.email.ne.jp>
 
 ;; Author: Koichiro Ohba <koichiro@meadowy.org>
@@ -47,9 +47,6 @@
 
 (luna-define-method initialize-instance :after ((shimbun shimbun-rss)
 						&rest init-args)
-  (shimbun-rss-initialize-ignored-subject shimbun))
-
-(defun shimbun-rss-initialize-ignored-subject (shimbun)
   (shimbun-rss-set-ignored-subject-internal
    shimbun
    (symbol-value (intern-soft (format "shimbun-%s-ignored-subject"
