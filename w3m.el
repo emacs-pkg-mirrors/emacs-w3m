@@ -176,7 +176,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1380 $"))
+    (let ((rev "$Revision: 1.1392 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -937,8 +937,10 @@ of the original request method."
 ;; backward-compatibility alias
 (put 'w3m-bold-face 'face-alias 'w3m-bold)
 
-(defface w3m-italic '((t (:italic t)))
-  "Face used for displaying italic text."
+(defface w3m-italic '((((type tty)) (:underline t))
+		      (t (:italic t)))
+  "Face used for displaying italic text.
+By default it will be a underline face on a non-window system."
   :group 'w3m-face)
 ;; backward-compatibility alias
 (put 'w3m-italic-face 'face-alias 'w3m-italic)
@@ -3594,6 +3596,7 @@ If URL is specified, only the image with URL is toggled."
   (let ((cur-point (point))
 	(buffer-read-only)
 	(end (or begin-pos (point-min)))
+	(allow-non-secure-images (not w3m-confirm-leaving-secure-page))
 	start iurl image size)
     (unless end-pos (setq end-pos (point-max)))
     (save-excursion
@@ -3634,8 +3637,12 @@ If URL is specified, only the image with URL is toggled."
 		(when (and (w3m-url-valid iurl)
 			   (or (not w3m-current-ssl)
 			       (string-match "\\`\\(?:ht\\|f\\)tps://" iurl)
-			       (y-or-n-p "\
-You are retrieving non-secure image. Continue?")))
+			       allow-non-secure-images
+			       (and (prog1
+					(y-or-n-p "\
+You are retrieving non-secure image(s).  Continue? ")
+				      (message nil))
+				    (setq allow-non-secure-images t))))
 		  (w3m-process-with-null-handler
 		    (lexical-let ((start (set-marker (make-marker) start))
 				  (end (set-marker (make-marker) end))
@@ -3828,6 +3835,7 @@ resizing an image."
 	 (iurl (w3m-image start))
 	 (size (get-text-property start 'w3m-image-size))
 	 (iscale (or (get-text-property start 'w3m-image-scale) '100))
+	 (allow-non-secure-images (not w3m-confirm-leaving-secure-page))
 	 scale image)
     (w3m-add-text-properties start end '(w3m-image-status on))
     (setq scale (truncate (* iscale rate 0.01)))
@@ -3846,8 +3854,12 @@ resizing an image."
       (when (and (w3m-url-valid iurl)
 		 (or (not w3m-current-ssl)
 		     (string-match "\\`\\(?:ht\\|f\\)tps://" iurl)
-		     (y-or-n-p "\
-You are retrieving non-secure image. Continue?")))
+		     allow-non-secure-images
+		     (and (prog1
+			      (y-or-n-p "\
+You are retrieving non-secure image(s).  Continue? ")
+			    (message nil))
+			  (setq allow-non-secure-images t))))
 	(w3m-process-with-null-handler
 	  (lexical-let ((start (set-marker (make-marker) start))
 			(end (set-marker (make-marker) end))
@@ -3979,8 +3991,12 @@ If optional KEEP-PROPERTIES is non-nil, text property is reserved."
   "Fontify the current buffer."
   (let ((case-fold-search t)
 	(buffer-read-only))
-    (run-hooks 'w3m-fontify-before-hook)
     (w3m-message "Fontifying...")
+    (run-hooks 'w3m-fontify-before-hook)
+    ;; Remove hidden anchors like "<a href=url> </a>".
+    (goto-char (point-min))
+    (while (re-search-forward "<a[\t\n ]+[^>]+>[\t\n ]*</a>" nil t)
+      (delete-region (match-beginning 0) (match-end 0)))
     ;; Delete <?xml ... ?> tag
     (goto-char (point-min))
     (if (search-forward "<?xml" nil t)
@@ -4105,14 +4121,23 @@ It replaces the faces on the arrived anchors from `w3m-anchor' to
 
 (defun w3m-gmane-url-at-point ()
   "Return a url that indicates the thread page in Gmane.
-This function works only when the cursor stays in the References header
-or the Message-ID header, otherwise returns nil.  That it returns an
-invalid url if Gmane doesn't handle the group cannot be helped."
+This function works only when the cursor stays in the References
+header or the Message-ID header, otherwise returns nil.
+
+On the Message-ID header, the url that asks Gmane for the thread
+beginning with the current article will be generated.
+On the References header, the url that asks Gmane for the whole thread
+\(namely it begins with the article of the first ID in the header) will
+be generated.  In that case, Gmane might fail to find the thread since
+it is possible that the root article has been posted to another group.
+
+That it returns an invalid url for the article of the group which is
+not being archived in Gmane cannot be helped."
   (save-excursion
     (let ((fmt "http://news.gmane.org/group/thread=%s/force_load=t")
 	  (start (point))
 	  (inhibit-point-motion-hooks t)
-	  md case-fold-search)
+	  case-fold-search)
       (goto-char (point-min))
       (re-search-forward (concat "^\\(?:"
 				 (regexp-quote mail-header-separator)
@@ -4126,15 +4151,8 @@ invalid url if Gmane doesn't handle the group cannot be helped."
 	  (beginning-of-line)
 	  (while (and (memq (char-after) '(?\t ? ))
 		      (zerop (forward-line -1))))
-	  (when (or (looking-at "References:[\t\n ]*<\\([^\t\n <>]+\\)>")
-		    (prog1
-			(looking-at "Message-ID:[\t\n ]*<\\([^\t\n <>]+\\)>")
-		      (setq md (match-data))
-		      (goto-char (point-min))
-		      (unless (re-search-forward
-			       "^References:[\t\n ]*<\\([^\t\n <>]+\\)>"
-			       nil t)
-			(set-match-data md))))
+	  (when (looking-at
+		 "\\(?:Message-ID\\|References\\):[\t\n ]*<\\([^\t\n <>]+\\)>")
 	    (format
 	     fmt
 	     (w3m-url-encode-string (match-string-no-properties 1)))))))))
@@ -4210,16 +4228,26 @@ Like `ffap-url-at-point', except that text props will be stripped."
 	 (setq ffap-url-regexp (replace-match "\\1\\\\|nntp:\\2"
 					      nil nil ffap-url-regexp)))))
 
-(defun w3m-active-region-or-url-at-point ()
+(defun w3m-active-region-or-url-at-point (&optional default=current)
   "Return an active region or a url around the cursor.
-In Transient Mark mode, deactivate the mark."
+In Transient Mark mode, deactivate the mark.  If DEFAULT=CURRENT is
+non-nil, return the url of the current page by default."
   (if (w3m-region-active-p)
       (prog1
 	  (w3m-replace-in-string (buffer-substring-no-properties
 				  (region-beginning) (region-end))
 				 "[\t\r\f\n 　]+" "")
 	(w3m-deactivate-region))
-    (w3m-url-at-point)))
+    (or (w3m-url-at-point)
+	(w3m-anchor)
+	(unless w3m-display-inline-images
+	  (w3m-image))
+	(and default=current
+	     (stringp w3m-current-url)
+	     (if (string-match "\\`about://\\(?:header\\|source\\)/"
+			       w3m-current-url)
+		 (substring w3m-current-url (match-end 0))
+	       w3m-current-url)))))
 
 (defsubst w3m-canonicalize-url (url &optional feeling-lucky)
   "Add a scheme part to an URL or make an URL for \"I'm Feeling Lucky on Google\"
@@ -4248,7 +4276,7 @@ if it has no scheme part."
     (unless default
       (setq default w3m-home-page))
     (unless initial
-      (setq initial (w3m-active-region-or-url-at-point)))
+      (setq initial (w3m-active-region-or-url-at-point t)))
     (if (and quick-start
 	     default
 	     (not initial))
@@ -4263,17 +4291,25 @@ if it has no scheme part."
 		      'self-insert-command))
 		  (unwind-protect
 		      (completing-read
-		       (or prompt
-			   (if default
-			       (format "URL %s(default %s): "
-				       (if feeling-lucky
-					   "or Keyword "
-					 "")
-				       (if (stringp default)
-					   (if (eq default w3m-home-page)
-					       "HOME" default)
-					 (prin1-to-string default)))
-			     "URL: "))
+		       (if prompt
+			   (if (or initial (not default))
+			       prompt
+			     (when (string-match " *: *\\'" prompt)
+			       (setq prompt (substring prompt 0
+						       (match-beginning 0))))
+			     (concat prompt " (default "
+				     (if (equal default w3m-home-page)
+					 "HOME"
+				       default)
+				     "): "))
+			 (if (or initial (not default))
+			     (if feeling-lucky "URL or Keyword: " "URL: ")
+			   (format "URL %s(default %s): "
+				   (if feeling-lucky "or Keyword " "")
+				   (if (stringp default)
+				       (if (eq default w3m-home-page)
+					   "HOME" default)
+				     (prin1-to-string default)))))
 		       'w3m-url-completion nil nil initial
 		       'w3m-input-url-history)
 		    (define-key minibuffer-local-completion-map " " ofunc))))
@@ -4845,9 +4881,9 @@ Return a list which includes:
 			   (match-string 1 type))
 		  type (w3m-remove-redundant-spaces
 			(substring type 0 (match-beginning 0))))
-	  (setq type (w3m-remove-redundant-spaces type))
-	  (when (string-match ";" type)
-	    (setq type (substring type 0 (match-beginning 0)))))
+	  (setq type (w3m-remove-redundant-spaces type)))
+	(when (string-match ";" type)
+	  (setq type (substring type 0 (match-beginning 0))))
 	(setq type (downcase type)))
       (setq w3m-current-ssl (cdr (assoc "w3m-ssl-certificate" headers)))
       (when (string-match "\\`ftps?:" url)
@@ -5435,15 +5471,11 @@ POST-DATA and REFERER will be sent to the web server with a request."
 
 ;;;###autoload
 (defun w3m-download (url &optional filename no-cache handler post-data)
+  "Download contents of URL to a file named FILENAME.
+NO-CHACHE (which the prefix argument gives when called interactively)
+specifies not using the cached data."
   (interactive
-   (let* ((url (w3m-input-url "Download URL (default HOME): "
-			      (when (stringp w3m-current-url)
-				(if (string-match
-				     "\\`about://\\(?:header\\|source\\)/"
-				     w3m-current-url)
-				    (substring w3m-current-url (match-end 0))
-				  w3m-current-url))
-			      w3m-home-page))
+   (let* ((url (w3m-input-url "Download URL: "))
 	  (basename (file-name-nondirectory (w3m-url-strip-query url))))
      (if (string-match "^[\t ]*$" basename)
 	 (list url
@@ -5691,7 +5723,9 @@ be displayed especially in shimbun articles."
 
 (defcustom w3m-confirm-leaving-secure-page t
   "If non-nil, you'll be asked for confirmation when leaving secure pages.
-It is STRONGLY recommended to set non-nil value to this option.
+This option controls whether the confirmation is made also when
+retrieving data (typically images) in a secure page from non-secure
+pages.  It is STRONGLY recommended to set non-nil value to this option.
 You MUST understand what you want to do completely before
 switching off this option."
   :group 'w3m
@@ -6385,7 +6419,7 @@ point."
       (if (w3m-display-graphic-p)
 	  (w3m-toggle-inline-image)
 	(w3m-view-image)))
-     ((setq url (w3m-active-region-or-url-at-point))
+     ((setq url (w3m-active-region-or-url-at-point t))
       (unless (eq 'quit (setq url (w3m-input-url nil url 'quit nil
 						 'feeling-lucky)))
 	(w3m-view-this-url-1 url arg new-session)))
@@ -7272,6 +7306,7 @@ as if the folder command of MH performs with the -pack option."
     (define-key map "B" 'w3m-view-previous-page)
     (define-key map "N" 'w3m-view-next-page)
     (define-key map "^" 'w3m-view-parent-page)
+    (define-key map "\M-d" 'w3m-download)
     (define-key map "d" 'w3m-download-this-url)
     (define-key map "u" 'w3m-print-this-url)
     (define-key map "I" 'w3m-view-image)
@@ -7827,7 +7862,8 @@ or a list which consists of the following elements:
 \\[w3m-view-url-with-external-browser]	Display the current page using the\
  external browser.
 
-\\[w3m-download-this-url]	Download the file or the page under point.
+\\[w3m-download]	Download the URL.
+\\[w3m-download-this-url]	Download the URL under point.
 
 \\[w3m-view-image]	Display the image under point in the external viewer.
 \\[w3m-save-image]	Save the image under point to a file.
@@ -8494,6 +8530,11 @@ It currently works only with Emacs 22 and newer."
 			       (setq w3m-modeline-title-timer nil))))
 			 (current-buffer)))))))
 
+(defconst w3m-buffer-local-url "buffer://")
+(defun w3m-buffer-local-url-p (url)
+  (save-match-data
+    (string-match (concat "^" w3m-buffer-local-url) url)))
+
 ;;;###autoload
 (defun w3m-goto-url (url &optional reload charset post-data referer handler
 			 element)
@@ -8520,15 +8561,7 @@ already been registered in the `w3m-history-flat' variable.  It is
 corresponding to URL to be retrieved at this time, not for the url of
 the current page."
   (interactive
-   (list (w3m-input-url
-	  nil
-	  (or (w3m-active-region-or-url-at-point)
-	      (when (stringp w3m-current-url)
-		(if (string-match "\\`about://\\(?:header\\|source\\)/"
-				  w3m-current-url)
-		    (substring w3m-current-url (match-end 0))
-		  w3m-current-url)))
-	  nil nil 'feeling-lucky)
+   (list (w3m-input-url nil nil nil nil 'feeling-lucky)
 	 current-prefix-arg
 	 (w3m-static-if (fboundp 'universal-coding-system-argument)
 	     coding-system-for-read)))
@@ -8576,6 +8609,22 @@ the current page."
 				 (eval w3m-local-find-file-function))
 			       file)))))
       (error nil)))
+   ;; process buffer-local url
+   ((w3m-buffer-local-url-p url)
+    (let (file-part fragment-part)
+      (w3m-string-match-url-components url)
+      (setq file-part (concat (match-string 4 url)
+			      (match-string 5 url))
+	    fragment-part (match-string 9 url))
+      (cond
+       ((and (string= file-part "")
+	     fragment-part)
+	(w3m-search-name-anchor fragment-part))
+       ((not (string= file-part ""))
+	(w3m-goto-url (w3m-expand-url (substring url (match-beginning 4))
+				      (concat "file://" default-directory))
+		      reload charset post-data referer handler element))
+       (t (w3m-message "No URL at point")))))
    ((w3m-url-valid url)
     (w3m-buffer-setup)			; Setup buffer.
     (w3m-arrived-setup)			; Setup arrived database.
@@ -8840,15 +8889,7 @@ If you invoke this command in the emacs-w3m buffer, the new session
 will be created by copying the current session.  Otherwise, the new
 session will start afresh."
   (interactive
-   (list (w3m-input-url
-	  nil
-	  (or (w3m-active-region-or-url-at-point)
-	      (when (stringp w3m-current-url)
-		(if (string-match "\\`about://\\(?:header\\|source\\)/"
-				  w3m-current-url)
-		    (substring w3m-current-url (match-end 0))
-		  w3m-current-url)))
-	  nil nil 'feeling-lucky)
+   (list (w3m-input-url nil nil	nil nil 'feeling-lucky)
 	 current-prefix-arg
 	 (w3m-static-if (fboundp 'universal-coding-system-argument)
 	     coding-system-for-read)
@@ -9029,7 +9070,7 @@ defaults to the value of `w3m-home-page' or \"about:\"."
 			   (not (and (setq args (cdr (member "w3m" args)))
 				     (member (car args) directives)))))
 	       args))
-      (defalias 'w3m-examine-command-line-args 'ignore))
+      (defalias 'w3m-examine-command-line-args (lambda nil)))
     ;; Inhibit the startup screen.
     (when (and url
 	       ;; Since XEmacs provides `inhibit-startup-message' as
@@ -9195,7 +9236,9 @@ parse the meta tag to extract the charset."
     (let ((w3m-current-buffer (current-buffer)))
       (unless charset
 	(setq charset (w3m-correct-charset (w3m-detect-meta-charset))))
-      (setq w3m-current-url url
+      (setq url (or url
+		    w3m-buffer-local-url)
+	    w3m-current-url url
 	    w3m-current-base-url url
 	    w3m-current-coding-system
 	    (if charset
@@ -9332,8 +9375,9 @@ non-ASCII characters."
 		  ((string-match "\\`about://header/" w3m-current-url)
 		   (substring w3m-current-url (match-end 0)))
 		  ((string-match "\\`about://source/" w3m-current-url)
-		   (concat "about://header/"
-			   (substring w3m-current-url (match-end 0))))
+		   (let ((real-url (substring w3m-current-url (match-end 0))))
+		     (unless (string-match "\\`about:" real-url)
+		       (concat "about://header/" real-url))))
 		  ((string-match "\\`about:" w3m-current-url)
 		   nil)
 		  (t
@@ -10037,6 +10081,7 @@ the `w3m-mode', otherwise use an existing emacs-w3m buffer."
      (url
       (setq safe-regexp (get-text-property (point) 'w3m-safe-url-regexp))
       (if (or (not safe-regexp)
+	      (w3m-buffer-local-url-p url)
 	      (string-match safe-regexp url)
 	      (and force
 		   (or (not (interactive-p))
@@ -10071,6 +10116,7 @@ This link is considered to be unsafe; use the prefix arg to view anyway"))))
 	(let ((safe-regexp (get-text-property (point) 'w3m-safe-url-regexp))
 	      (use-dialog-box t))
 	  (when (or (not safe-regexp)
+		    (w3m-buffer-local-url-p url)
 		    (string-match safe-regexp url)
 		    (y-or-n-p "\
 This link is considered to be unsafe; continue? "))
