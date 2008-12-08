@@ -1,6 +1,6 @@
 ;;; sb-itmedia.el --- shimbun backend for ITmedia -*- coding: iso-2022-7bit -*-
 
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2004, 2005, 2006, 2007, 2008
 ;; Yuuichi Teranishi <teranisi@gohome.org>
 
 ;; Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
@@ -74,16 +74,11 @@
 R[TQ[*i0d##D=I3|g`2yr@sc<pK1SB
  j`}1YEnKc;U0:^#LQB*})Q}y=45<lIE4q<gZ88e2qS8a@Tys6S")))
 
-(defvar shimbun-itmedia-content-start
-  "<div class=\"body-rap\">\\|<div id=\"wrIcon\">")
+(defvar shimbun-itmedia-content-start "<div class=\"body-rap\">")
 (defvar shimbun-itmedia-content-end "<div class=\"credit-rap\">")
 
 (defvar shimbun-itmedia-retry-fetching 1)
 (defvar shimbun-itmedia-ignored-subject "^PR:")
-
-(luna-define-method initialize-instance :after ((shimbun shimbun-itmedia)
-						&rest init-args)
-  (shimbun-rss-initialize-ignored-subject shimbun))
 
 (luna-define-method shimbun-groups ((shimbun shimbun-itmedia))
   (mapcar 'car shimbun-itmedia-group-alist))
@@ -196,8 +191,8 @@ R[TQ[*i0d##D=I3|g`2yr@sc<pK1SB
 	  (replace-match "\n\\3\n")))
       t)))
 
-(luna-define-method shimbun-clear-contents :around ((shimbun shimbun-itmedia)
-						    header)
+(luna-define-method shimbun-clear-contents :around
+  ((shimbun shimbun-itmedia) header)
   (or (luna-call-next-method)
       (prog1
 	  (let ((case-fold-search t)
