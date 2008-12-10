@@ -1,3 +1,104 @@
+2008-12-10  David Engster  <dengste@eml.cc>
+
+	* sb-atom.el (shimbun-atom-get-headers): Use the first link if the atom
+	feed don't have an "alternate" link element.
+
+	* sb-atom-hash.el (shimbun-hash-update-items-impl): Deal with feeds who
+	just publish a summary, in addition to feeds with published content.
+
+2008-12-01  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* shimbun.el (shimbun-servers-list): Don't exclude rss-hash and
+	atom-hash.
+
+2008-11-28  David Engster  <dengste@eml.cc>
+
+	* sb-rss-blogs.el: New file.
+
+2008-11-27  David Engster  <dengste@eml.cc>
+
+	* shimbun.el (shimbun-use-local, shimbun-local-path): New variables.
+	(shimbun-retrieve-url): Support offline retrieving of indices.
+
+	* nnshimbun.el (nnshimbun-generate-download-script): New command.
+
+2008-11-11  Naohiro Aota  <nao.aota@gmail.com>
+
+	* sb-aljazeera.el (shimbun-aljazeera-url)
+	(shimbun-aljazeera-path-alist): Update to follow changes.
+
+2008-11-10  David Engster  <dengste@eml.cc>
+
+	* sb-slashdot.el (shimbun-slashdot-regexp-section-id-subject)
+	(shimbun-slashdot-regexp-comment-system): Updated regexps.
+
+2008-11-06  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* sb-sankei.el (shimbun-sankei-clear-contents): Add another regexp to
+	look for the content start.
+
+2008-10-23  ARISAWA Akihiro  <ari@mbf.sphere.ne.jp>
+
+	* sb-rss.el (shimbun-rss-get-headers): Don't check `ignored-subject'
+	when subject is empty.
+
+2008-10-10  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* sb-kantei.el (shimbun-clear-contents): Remove contents other than the
+	ones written by the Prime Minister.
+
+2008-10-02  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* sb-kantei.el (shimbun-kantei-x-face-alist): Update.
+	(shimbun-clear-contents): Remove style sheet, navigation button, and
+	table tags; shrink boundary lines; convert zenkaku ASCII to hankaku.
+
+2008-10-01  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* sb-asahi.el (shimbun-asahi-get-headers-for-today): Fix regexp.
+
+2008-09-26  ARISAWA Akihiro  <ari@mbf.sphere.ne.jp>
+
+	* sb-rss.el (luna-define-class): Add a new slot `ignored-subject'.
+	Define internal accessor.
+	(initialize-instance): Initialize `ignored-subject'.
+	(shimbun-rss-get-headers): Chech if a subject matches with
+	`ignored-subject'.
+
+	* sb-impress.el (shimbun-impress-groups-alist): Use rss for
+	forest group.
+	(shimbun-impress-ignored-subject): Rename from
+	shimbun-impress-ignored-subject-regexp.
+	(shimbun-headers): Don't check ignored-subject here.
+
+	* sb-itmedia.el (shimbun-itmedia-ignored-subject): New variable.
+
+2008-09-26  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* sb-kantei.el: Support Aso Cabinet E-mail Magazine.
+
+2008-09-20  David Engster  <dengste@eml.cc>
+
+	* sb-perlentaucher-de.el (shimbun-perlentaucher-de-url-regexp): Adapt
+	to new URL scheme in RSS feed.
+
+	* sb-slashdot.el: Require sb-multi and use it.
+	(shimbun-slashdot-content-end, shimbun-slashdot-content-start): Remove.
+	(shimbun-slashdot-get-comments, shimbun-slashdot-comment-threshold)
+	(shimbun-slashdot-comment-display): New variables.
+	(shimbun-slashdot-regexp-author-time): Relax regexp.
+	(shimbun-slashdot-regexp-comment-system): New variable.
+	(shimbun-slashdot-get-headers): Replace HTML tags in subject.
+	(shimbun-multi-next-url, shimbun-clear-contents): New overriden
+	methods.
+
+2008-09-15  ARISAWA Akihiro  <ari@mbf.sphere.ne.jp>
+
+	* sb-yahoo-auctions.el (shimbun-yahoo-auctions-content-start)
+	(shimbun-yahoo-auctions-content-end): Follow the change of the site
+	design.
+	(shimbun-make-contents): Remove.
+
 2008-09-04  Katsumi Yamaoka  <yamaoka@jpl.org>
 
 	* sb-ohmynews-jp.el: Remove.
