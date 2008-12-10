@@ -1512,8 +1512,6 @@ selected rather than \(as usual\) some other window.  See
     'w3m-form-input-select-exit)
   (define-key w3m-form-input-select-keymap "q"
     'w3m-form-input-select-exit)
-  (define-key w3m-form-input-select-keymap "\C-g"
-    'w3m-form-input-select-exit)
   (define-key w3m-form-input-select-keymap "h" 'backward-char)
   (define-key w3m-form-input-select-keymap "j" 'next-line)
   (define-key w3m-form-input-select-keymap "k" 'previous-line)
@@ -1688,8 +1686,6 @@ selected rather than \(as usual\) some other window.  See
   (define-key w3m-form-input-map-keymap "\C-c\C-k"
     'w3m-form-input-map-exit)
   (define-key w3m-form-input-map-keymap "q"
-    'w3m-form-input-map-exit)
-  (define-key w3m-form-input-map-keymap "\C-g"
     'w3m-form-input-map-exit)
   (define-key w3m-form-input-map-keymap "h" 'backward-char)
   (define-key w3m-form-input-map-keymap "j" 'next-line)
