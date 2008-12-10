@@ -1,6 +1,6 @@
 ;;; w3m-util.el --- Utility macros and functions for emacs-w3m
 
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ;; TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Authors: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
@@ -210,15 +210,6 @@ to the position where the property exists."
   (if position
       `(get-text-property ,position 'w3m-image)
     `(w3m-get-text-property-around 'w3m-image)))
-
-(defmacro w3m-image-alt (&optional position)
-  "Return the value of the `w3m-image-alt' property at the given POSITION.
-NOTE: If POSITION is omitted, it searches for the property in one
-character before and behind the current position, and point will move
-to the position where the property exists."
-  (if position
-      `(get-text-property ,position 'w3m-image-alt)
-    `(w3m-get-text-property-around 'w3m-image-alt)))
 
 (defmacro w3m-submit (&optional position)
   "Return the value of the `w3m-submit' property at the given POSITION.
