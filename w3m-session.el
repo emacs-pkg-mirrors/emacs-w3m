@@ -1,6 +1,6 @@
 ;;; w3m-session.el --- Functions to operate session of w3m -*- coding: iso-2022-7bit; -*-
 
-;; Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2008
 ;; TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Author: Hideyuki SHIRAI <shirai@meadowy.org>
@@ -30,7 +30,6 @@
 
 
 ;;; Code:
-(eval-when-compile (require 'cl))
 (require 'w3m)
 
 (defcustom w3m-session-file
@@ -46,11 +45,6 @@
 
 (defcustom w3m-session-deleted-save t
   "*Non-nil means save deleted sessions."
-  :group 'w3m
-  :type 'boolean)
-
-(defcustom w3m-session-crash-recovery t
-  "*Non-nil means emacs-w3m save session set automatically, and recover it when emacs-w3m crash."
   :group 'w3m
   :type 'boolean)
 
@@ -79,21 +73,8 @@
   :group 'w3m
   :type '(string :size 0))
 
-(defcustom w3m-session-crash-recovery-title
-  (if (equal "Japanese" w3m-language)
-      "クラッシュ回復"
-    "Crash recovery sessions")
-  "*String of title to save session to use for crash recovering."
-  :group 'w3m
-  :type '(string :size 0))
-
 (defcustom w3m-session-deleted-keep-number 5
   "*Number to keep sessions when buffers delete."
-  :group 'w3m
-  :type '(integer :size 0))
-
-(defcustom w3m-session-automatic-keep-number 5
-  "*Number to keep sessions automatically."
   :group 'w3m
   :type '(integer :size 0))
 
@@ -101,20 +82,6 @@
   "*String of title to use when title is not specified."
   :group 'w3m
   :type '(string :size 0))
-
-(defcustom w3m-session-load-last-sessions nil
-  "*Whether to load the last sessions when emacs-w3m starts."
-  :group 'w3m
-  :type '(radio (const :format "Load the last sessions automatically." t)
-		(const :format "Ask whether to load the last sessions." ask)
-		(const :format "Never load the last sessions automatically." nil)))
-
-(defcustom w3m-session-load-crashed-sessions 'ask
-  "*Whether to load the crashed sessions when emacs-w3m starts."
-  :group 'w3m
-  :type '(radio (const :format "Load the crashed sessions automatically." t)
-		(const :format "Ask whether to load the crashed sessions." ask)
-		(const :format "Never load the crashed sessions automatically." nil)))
 
 (defface w3m-session-select
   `((((class color) (background light) (type tty))
@@ -161,205 +128,129 @@
 ;;                         (url12 pos12 hflat12 urltitle12) ...) current1)
 ;;   ...
 
-(defmacro w3m-session-ignore-errors (&rest forms)
-  "Run FORMS.  Remove `w3m-session-file' and quit if any error happens."
-  `(condition-case err
-       (progn ,@forms)
-     (error
-      (if (and (file-exists-p w3m-session-file)
-	       (yes-or-no-p (format
-			     "\
-Sorry, an error found in \"%s\"; may we remove it? "
-			     ,(if (featurep 'xemacs)
-				  '(abbreviate-file-name w3m-session-file t)
-				'(abbreviate-file-name w3m-session-file)))))
-	  (progn
-	    (delete-file w3m-session-file)
-	    (run-at-time 0.1 nil #'message
-			 "\"%s\" has been removed; try again"
-			 (abbreviate-file-name w3m-session-file))
-	    (keyboard-quit))
-	(signal (car err) (cdr err))))))
-
 ;;;###autoload
 (defun w3m-session-save ()
   "Save list of displayed session."
   (interactive)
-  (w3m-session-ignore-errors
-   (let ((sessions (w3m-load-list w3m-session-file))
-	 (bufs (w3m-list-buffers))
-	 (prompt "New session title: ")
-	 (cnum 0)
-	 (i 0)
-	 title titles urls len buf cbuf)
-     (mapc (lambda (x)
-	     (setq titles (cons (cons (car x) (car x)) titles)))
-	   sessions)
-     (setq title (or w3m-current-title
-		     (save-excursion
-		       (set-buffer (car bufs))
-		       w3m-current-title)))
-     (setq titles (cons (cons title title) titles))
-     (catch 'loop
-       (while t
-	 (setq title (completing-read prompt titles nil nil title))
-	 (if (or (string= title "")
-		 (and (assoc title sessions)
-		      (not (y-or-n-p (format "\"%s\" is exist. Overwrite? "
-					     title)))))
-	     (setq prompt "Again New session title: ")
-	   (throw 'loop t))))
-     (setq cbuf (current-buffer))
-     (save-excursion
-       (while (setq buf (car bufs))
-	 (setq bufs (cdr bufs))
-	 (set-buffer buf)
-	 (when w3m-current-url
-	   (when (eq cbuf (current-buffer))
-	     (setq cnum i))
-	   (setq i (1+ i))
-	   (setq urls (cons (list w3m-current-url
-				  (copy-sequence (caar w3m-history))
-				  (w3m-session-history-to-save)
-				  w3m-current-title)
-			    urls)))))
-     (if (not urls)
-	 (message "%s: no session save...done" title)
-       (setq len (length urls))
-       (setq urls (nreverse urls))
-       (when (assoc title sessions)
-	 (setq sessions (delete (assoc title sessions) sessions)))
-       (setq sessions (cons (list title (current-time) urls cnum) sessions))
-       (w3m-save-list w3m-session-file sessions)
-       (if (= len 1)
-	   (message "%s: 1 session save...done" title)
-	 (message "%s: %d sessions save...done" title len))))))
+  (let ((sessions (w3m-load-list w3m-session-file))
+	(bufs (w3m-list-buffers))
+	(prompt "New session title: ")
+	(cnum 0)
+	(i 0)
+	title titles urls len buf cbuf)
+    (mapc (lambda (x)
+	    (setq titles (cons (cons (car x) (car x)) titles)))
+	  sessions)
+    (setq title (or w3m-current-title
+		    (save-excursion
+		      (set-buffer (car bufs))
+		      w3m-current-title)))
+    (setq titles (cons (cons title title) titles))
+    (catch 'loop
+      (while t
+	(setq title (completing-read prompt titles nil nil title))
+	(if (or (string= title "")
+		(and (assoc title sessions)
+		     (not (y-or-n-p (format "\"%s\" is exist. Overwrite? "
+					    title)))))
+	    (setq prompt "Again New session title: ")
+	  (throw 'loop t))))
+    (setq cbuf (current-buffer))
+    (save-excursion
+      (while (setq buf (car bufs))
+	(setq bufs (cdr bufs))
+	(set-buffer buf)
+	(when w3m-current-url
+	  (when (eq cbuf (current-buffer))
+	    (setq cnum i))
+	  (setq i (1+ i))
+	  (setq urls (cons (list w3m-current-url
+				 (copy-sequence (caar w3m-history))
+				 (w3m-session-history-to-save)
+				 w3m-current-title)
+			   urls)))))
+    (if (not urls)
+	(message "%s: no session save...done" title)
+      (setq len (length urls))
+      (setq urls (nreverse urls))
+      (when (assoc title sessions)
+	(setq sessions (delete (assoc title sessions) sessions)))
+      (setq sessions (cons (list title (current-time) urls cnum) sessions))
+      (w3m-save-list w3m-session-file sessions)
+      (if (= len 1)
+	  (message "%s: 1 session save...done" title)
+	(message "%s: %d sessions save...done" title len)))))
 
 (defun w3m-session-automatic-save ()
   "Save list of displayed session automatically."
   (when w3m-session-autosave
-    (w3m-session-ignore-errors
-     (let ((sessions (w3m-load-list w3m-session-file))
-	   (bufs (w3m-list-buffers))
-	   (title (concat w3m-session-automatic-title "-1"))
-	   (titleregex (concat "^"
-			       (regexp-quote w3m-session-automatic-title)
-			       "-[0-9]+$"))
-	   (cnum 0)
-	   (i 0)
-	   urls buf cbuf session
-	   tmp tmptitle tmptime tmpurls)
-       (when bufs
-	 (setq cbuf (current-buffer))
-	 (save-excursion
-	   (while (setq buf (car bufs))
-	     (setq bufs (cdr bufs))
-	     (set-buffer buf)
-	     (when w3m-current-url
-	       (when (eq cbuf (current-buffer))
-		 (setq cnum i))
-	       (setq i (1+ i))
-	       (setq urls (cons (list w3m-current-url
-				      (copy-sequence (caar w3m-history))
-				      (w3m-session-history-to-save)
-				      w3m-current-title)
-				urls)))))
-	 (when urls
-	   (setq i 2)
-	   (while (setq session (car sessions))
-	     (setq sessions (cdr sessions))
-	     (if (string-match titleregex (nth 0 session))
-		 (when (<= i w3m-session-automatic-keep-number)
-		   (setq tmptitle (format (concat w3m-session-automatic-title
-						  "-%d") i))
-		   (setq tmptime (nth 1 session))
-		   (setq tmpurls (nth 2 session))
-		   (setq tmp (cons (list tmptitle tmptime tmpurls nil) tmp))
-		   (setq i (1+ i)))
-	       (setq tmp (cons session tmp))))
-	   (setq sessions (nreverse tmp))
-	   (setq urls (nreverse urls))
-	   (setq sessions (cons (list title (current-time) urls cnum)
-				sessions))
-	   (w3m-save-list w3m-session-file sessions)))))))
+    (let ((sessions (w3m-load-list w3m-session-file))
+	  (bufs (w3m-list-buffers))
+	  (title w3m-session-automatic-title)
+	  (cnum 0)
+	  (i 0)
+	  urls buf cbuf)
+      (when bufs
+	(setq cbuf (current-buffer))
+	(save-excursion
+	  (while (setq buf (car bufs))
+	    (setq bufs (cdr bufs))
+	    (set-buffer buf)
+	    (when w3m-current-url
+	      (when (eq cbuf (current-buffer))
+		(setq cnum i))
+	      (setq i (1+ i))
+	      (setq urls (cons (list w3m-current-url
+				     (copy-sequence (caar w3m-history))
+				     (w3m-session-history-to-save)
+				     w3m-current-title)
+			       urls)))))
+	(when urls
+	  (setq urls (nreverse urls))
+	  (when (assoc title sessions)
+	    (setq sessions (delete (assoc title sessions) sessions)))
+	  (setq sessions (cons (list title (current-time) urls cnum) sessions))
+	  (w3m-save-list w3m-session-file sessions))))))
 
 (defun w3m-session-deleted-save (buffers)
   "Save list of deleted session."
   (when w3m-session-deleted-save
-    (w3m-session-ignore-errors
-     (let ((sessions (w3m-load-list w3m-session-file))
-	   (title (concat w3m-session-deleted-title "-1"))
-	   (titleregex (concat "^"
-			       (regexp-quote w3m-session-deleted-title)
-			       "-[0-9]+$"))
-	   (bufs (copy-sequence buffers))
-	   (i 2)
-	   urls buf session
-	   tmp tmptitle tmptime tmpurls)
-       (when bufs
-	 (setq bufs (sort bufs 'w3m-buffer-name-lessp))
-	 (save-excursion
-	   (while (setq buf (car bufs))
-	     (setq bufs (cdr bufs))
-	     (set-buffer buf)
-	     (when w3m-current-url
-	       (setq urls (cons (list w3m-current-url
-				      (copy-sequence (caar w3m-history))
-				      (w3m-session-history-to-save)
-				      w3m-current-title)
-				urls)))))
-	 (when urls
-	   (while (setq session (car sessions))
-	     (setq sessions (cdr sessions))
-	     (if (string-match titleregex (nth 0 session))
-		 (when (<= i w3m-session-deleted-keep-number)
-		   (setq tmptitle (format (concat w3m-session-deleted-title
-						  "-%d") i))
-		   (setq tmptime (nth 1 session))
-		   (setq tmpurls (nth 2 session))
-		   (setq tmp (cons (list tmptitle tmptime tmpurls nil) tmp))
-		   (setq i (1+ i)))
-	       (setq tmp (cons session tmp))))
-	   (setq sessions (nreverse tmp))
-	   (setq urls (nreverse urls))
-	   (setq sessions (cons (list title (current-time) urls nil) sessions))
-	   (w3m-save-list w3m-session-file sessions)))))))
-
-(defun w3m-session-crash-recovery-save ()
-  "Save list of displayed session."
-  (when w3m-session-crash-recovery
-    (w3m-session-ignore-errors
-     (let ((sessions (w3m-load-list w3m-session-file))
-	   (bufs (w3m-list-buffers))
-	   (title w3m-session-crash-recovery-title)
-	   urls buf tmp)
-       (when bufs
-	 (save-excursion
-	   (while (setq buf (car bufs))
-	     (setq bufs (cdr bufs))
-	     (set-buffer buf)
-	     (when w3m-current-url
-	       (setq urls (cons (list w3m-current-url
-				      (copy-sequence (caar w3m-history))
-				      (w3m-session-history-to-save)
-				      w3m-current-title)
-				urls)))))
-	 (when urls
-	   (setq urls (nreverse urls))
-	   (setq tmp (assoc title sessions))
-	   (when tmp (setq sessions (delete tmp sessions)))
-	   (setq sessions (cons (list title (current-time) urls nil) sessions))
-	   (w3m-save-list w3m-session-file sessions)))))))
-
-(defun w3m-session-crash-recovery-remove ()
-  "Remove crash recovery session set."
-  (when w3m-session-crash-recovery
-    (w3m-session-ignore-errors
-     (let* ((sessions (w3m-load-list w3m-session-file))
-	    (item (assoc w3m-session-crash-recovery-title sessions)))
-       (when item
-	 (setq sessions (delete item sessions))
-	 (w3m-save-list w3m-session-file sessions))))))
+    (let ((sessions (w3m-load-list w3m-session-file))
+	  (title (concat w3m-session-deleted-title "-1"))
+	  (titleregex (concat "^"
+			      (regexp-quote w3m-session-deleted-title)
+			      "-[0-9]+$"))
+	  (bufs (copy-sequence buffers))
+	  (i 2)
+	  urls buf session
+	  tmp tmptitle tmptime tmpurls)
+      (when bufs
+	(setq bufs (sort bufs 'w3m-buffer-name-lessp))
+	(save-excursion
+	  (while (setq buf (car bufs))
+	    (setq bufs (cdr bufs))
+	    (set-buffer buf)
+	    (when w3m-current-url
+	      (setq urls (cons (list w3m-current-url
+				     (copy-sequence (caar w3m-history))
+				     (w3m-session-history-to-save)
+				     w3m-current-title)
+			       urls)))))
+	(when urls
+	  (while (setq session (car sessions))
+	    (setq sessions (cdr sessions))
+	    (if (string-match titleregex (nth 0 session))
+		(when (<= i w3m-session-deleted-keep-number)
+		  (setq tmptitle (format (concat w3m-session-deleted-title "-%d") i))
+		  (setq tmptime (nth 1 session))
+		  (setq tmpurls (nth 2 session))
+		  (setq tmp (cons (list tmptitle tmptime tmpurls nil) tmp))
+		  (setq i (1+ i)))
+	      (setq tmp (cons session tmp))))
+	  (setq sessions (nreverse tmp))
+	  (setq urls (nreverse urls))
+	  (setq sessions (cons (list title (current-time) urls nil) sessions))
+	  (w3m-save-list w3m-session-file sessions))))))
 
 (defvar w3m-session-select-mode-map nil)
 (unless w3m-session-select-mode-map
@@ -367,15 +258,12 @@ Sorry, an error found in \"%s\"; may we remove it? "
     (suppress-keymap map)
     (define-key map "q" 'w3m-session-select-quit)
     (define-key map "Q" 'w3m-session-select-quit)
-    (define-key map "\C-g" 'w3m-session-select-quit)
     (define-key map "\C-m" 'w3m-session-select-select)
     (define-key map "\M-s" 'w3m-session-select-open-session-group)
     (define-key map "d" 'w3m-session-select-delete)
     (define-key map "D" 'w3m-session-select-delete)
     (define-key map "s" 'w3m-session-select-save)
     (define-key map "S" 'w3m-session-select-save)
-    (define-key map "r" 'w3m-session-select-rename)
-    (define-key map "R" 'w3m-session-select-rename)
     (define-key map "n" 'w3m-session-select-next)
     (define-key map "j" 'w3m-session-select-next)
     (define-key map "\C-n" 'w3m-session-select-next)
@@ -399,24 +287,22 @@ Sorry, an error found in \"%s\"; may we remove it? "
 \\[w3m-session-select-select]	Select the session.
 \\[w3m-session-select-open-session-group]	Open the session group.
 \\[w3m-session-select-delete]	Delete the session.
-\\[w3m-session-select-rename]	Rename the session.
 \\[w3m-session-select-save]	Save the session.
 \\[w3m-session-select-next]	Move the point to the next session.
 \\[w3m-session-select-previous]	Move the point to the previous session.
 \\[w3m-session-select-quit]	Exit selecting session.
 "
-  (w3m-session-ignore-errors
-   (let ((sessions (or sessions
-		       (w3m-load-list w3m-session-file))))
-     (buffer-disable-undo)
-     (setq mode-name "w3m session"
-	   truncate-lines t
-	   buffer-read-only nil
-	   major-mode 'w3m-session-select-mode
-	   w3m-session-select-sessions sessions
-	   buffer-read-only t)
-     (use-local-map w3m-session-select-mode-map)
-     (w3m-session-select-list-all-sessions))))
+  (let ((sessions (or sessions
+		      (w3m-load-list w3m-session-file))))
+    (buffer-disable-undo)
+    (setq mode-name "w3m session"
+	  truncate-lines t
+	  buffer-read-only nil
+	  major-mode 'w3m-session-select-mode
+	  w3m-session-select-sessions sessions
+	  buffer-read-only t)
+    (use-local-map w3m-session-select-mode-map)
+    (w3m-session-select-list-all-sessions)))
 
 (defun w3m-session-select-list-all-sessions ()
   "List up all saved sessions."
@@ -424,7 +310,8 @@ Sorry, an error found in \"%s\"; may we remove it? "
 	 (num 0)
 	 (max 0)
 	 (buffer-read-only nil)
-	 title titles time times url urls wid pos)
+	 c title titles time times url urls wid
+	 window last-window num-or-sym pos)
     (if (not sessions)
 	(progn
 	  (message "No saved session")
@@ -609,17 +496,6 @@ Sorry, an error found in \"%s\"; may we remove it? "
     (w3m-session-save)
     (w3m-session-select)))
 
-(defun w3m-session-select-rename ()
-  "Rename this session."
-  (interactive)
-  (beginning-of-line)
-  (let ((num (get-text-property
-	      (point) 'w3m-session-number))
-	(sessions w3m-session-select-sessions))
-    (w3m-session-select-quit)
-    (w3m-session-rename sessions num)
-    (w3m-session-select)))
-
 (defun w3m-session-select-delete ()
   "Delete the session."
   (interactive)
@@ -636,34 +512,33 @@ Sorry, an error found in \"%s\"; may we remove it? "
 (defun w3m-session-select ()
   "Select session from session list."
   (interactive)
-  (w3m-session-ignore-errors
-   (let* ((sessions (w3m-load-list w3m-session-file))
-	  (showbuf (get-buffer-create " *w3m-session select*"))
-	  (wheight (max (+ (length sessions) 5) window-min-height))
-	  (wincfg (current-window-configuration))
-	  window last-window)
-     (setq last-window (previous-window
-			(w3m-static-if (fboundp 'frame-highest-window)
-			    (frame-highest-window)
-			  (frame-first-window))))
-     (while (minibuffer-window-active-p last-window)
-       (setq last-window (previous-window last-window)))
-     (while (and
-	     (not (one-window-p))
-	     (or (< (window-width last-window)
-		    (frame-width))
-		 (< (window-height last-window)
-		    (+ wheight window-min-height))))
-       (setq window last-window)
-       (setq last-window (previous-window window))
-       (delete-window window))
-     (select-window (split-window last-window))
-     (condition-case nil
-	 (shrink-window (- (window-height) wheight))
-       (error nil))
-     (switch-to-buffer showbuf)
-     (setq w3m-session-select-wincfg wincfg)
-     (w3m-session-select-mode sessions))))
+  (let* ((sessions (w3m-load-list w3m-session-file))
+	 (showbuf (get-buffer-create " *w3m-session select*"))
+	 (wheight (max (+ (length sessions) 5) window-min-height))
+	 (wincfg (current-window-configuration))
+	 window last-window)
+    (setq last-window (previous-window
+		       (w3m-static-if (fboundp 'frame-highest-window)
+			   (frame-highest-window)
+			 (frame-first-window))))
+    (while (minibuffer-window-active-p last-window)
+      (setq last-window (previous-window last-window)))
+    (while (and
+	    (not (one-window-p))
+	    (or (< (window-width last-window)
+		   (frame-width))
+		(< (window-height last-window)
+		   (+ wheight window-min-height))))
+      (setq window last-window)
+      (setq last-window (previous-window window))
+      (delete-window window))
+    (select-window (split-window last-window))
+    (condition-case nil
+	(shrink-window (- (window-height) wheight))
+      (error nil))
+    (switch-to-buffer showbuf)
+    (setq w3m-session-select-wincfg wincfg)
+    (w3m-session-select-mode sessions)))
 
 (defun w3m-session-goto-session (session)
   "Goto URLs."
@@ -693,39 +568,6 @@ Sorry, an error found in \"%s\"; may we remove it? "
     (when (and cbuf (eq major-mode 'w3m-mode))
       (set-window-buffer (selected-window) cbuf))
     (message "Session goto(%s)...done" title)))
-
-(defun w3m-session-rename (sessions num)
-    (if (consp num)
-	(message "This command can execute in Main session area")
-      (let ((prompt "New session title: ")
-	    (overwrite nil)
-	    tmp title otitle)
-	(setq tmp (nth num sessions))
-	(setq otitle (car tmp))
-	(setq title otitle)
-	(catch 'loop
-	  (while t
-	    (setq title (read-from-minibuffer prompt otitle))
-	    (cond
-	     ((string= title "")
-	      nil)
-	     ((string= title otitle)
-	      (when (y-or-n-p
-		     (format "\"%s\" is same as original title. Do not rename? "
-			     title))
-		(throw 'loop t)))
-	     ((assoc title sessions)
-	      (when (y-or-n-p (format "\"%s\" is exist. Overwrite? " title))
-		(setq overwrite t)
-		(throw 'loop t))))
-	    (setq prompt "Again New session title: ")))
-	(when overwrite
-	  (setq sessions (delete (assoc title sessions) sessions)))
-	(unless (string= title otitle)
-	  (setq sessions (delete tmp sessions))
-	  (setcar tmp title)
-	  (setq sessions (cons tmp sessions))
-	  (w3m-save-list w3m-session-file sessions)))))
 
 (defun w3m-session-delete (sessions num)
   (let (tmp)
@@ -828,68 +670,32 @@ file exists, otherwise nil."
 	   (equal w3m-session-menu-items-time
 		  (w3m-session-file-modtime)))
       w3m-session-menu-items-pre
-    (w3m-session-ignore-errors
-     (let ((sessions (w3m-load-list w3m-session-file)))
-       (setq w3m-session-menu-items-time (w3m-session-file-modtime))
-       (setq w3m-session-menu-items-pre
-	     (and sessions
-		  (mapcar
-		   (lambda (entry)
-		     (cons (w3m-session-make-item (car entry))
-			   (cons (vector "Open all sessions"
-					 `(w3m-session-goto-session
-					   (quote ,entry)))
-				 (mapcar
-				  (lambda (item)
-				    (let ((title
-					   (w3m-session-make-item
-					    (or (nth 3 item)
-						w3m-session-unknown-title))))
-				      (vector
-				       title
-				       `(w3m-session-goto-session
-					 (quote
-					  ,(list title
-						 nil
-						 (list item)
-						 nil))))))
-				  (nth 2 entry)))))
-		   sessions)))))))
-
-;;;###autoload
-(defun w3m-session-last-autosave-session ()
-  (when w3m-session-load-last-sessions
-    (w3m-session-ignore-errors
-     (let ((item
-	    (let ((sessions (w3m-load-list w3m-session-file))
-		  (n 1) x)
-	      (catch 'loop
-		(while t
-		  (if (< w3m-session-automatic-keep-number n)
-		      (throw 'loop nil)
-		    (setq x (assoc (format "%s-%d"
-					   w3m-session-automatic-title n)
-				   sessions))
-		    (when x (throw 'loop x)))
-		  (setq n (1+ n)))))))
-       (when (and item
-		  (or (and (eq w3m-session-load-last-sessions 'ask)
-			   (y-or-n-p "Load the last sessions? "))
-		      w3m-session-load-last-sessions))
-	 item)))))
-
-;;;###autoload
-(defun w3m-session-last-crashed-session ()
-  (when (and w3m-session-crash-recovery w3m-session-load-crashed-sessions)
-    (w3m-session-ignore-errors
-     (let ((item (assoc w3m-session-crash-recovery-title
-			(w3m-load-list w3m-session-file))))
-       (when (and item
-		  (or (and (eq w3m-session-load-crashed-sessions 'ask)
-			   (y-or-n-p "Load the crashed sessions? "))
-		      (eq w3m-session-load-crashed-sessions t)))
-	 item)))))
+    (let ((sessions (w3m-load-list w3m-session-file)))
+      (setq w3m-session-menu-items-time (w3m-session-file-modtime))
+      (setq w3m-session-menu-items-pre
+	    (and sessions
+		 (mapcar
+		  (lambda (entry)
+		    (cons (w3m-session-make-item (car entry))
+			  (cons (vector "Open all sessions"
+					`(w3m-session-goto-session
+					  (quote ,entry)))
+				(mapcar
+				 (lambda (item)
+				   (let ((title 
+					  (w3m-session-make-item 
+					   (or (nth 3 item)
+					       w3m-session-unknown-title))))
+				     (vector
+				      title
+				      `(w3m-session-goto-session
+					(quote
+					 ,(list title
+						nil
+						(list item)
+						nil))))))
+				 (nth 2 entry)))))
+		  sessions))))))
 
 (provide 'w3m-session)
-
 ;;; w3m-session.el ends here
