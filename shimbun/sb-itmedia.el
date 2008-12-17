@@ -74,10 +74,12 @@
 R[TQ[*i0d##D=I3|g`2yr@sc<pK1SB
  j`}1YEnKc;U0:^#LQB*})Q}y=45<lIE4q<gZ88e2qS8a@Tys6S")))
 
-(defvar shimbun-itmedia-content-start "<div class=\"body-rap\">")
+(defvar shimbun-itmedia-content-start
+  "<div class=\"body-rap\">\\|<div id=\"wrIcon\">")
 (defvar shimbun-itmedia-content-end "<div class=\"credit-rap\">")
 
 (defvar shimbun-itmedia-retry-fetching 1)
+(defvar shimbun-itmedia-ignored-subject "^PR:")
 
 (luna-define-method shimbun-groups ((shimbun shimbun-itmedia))
   (mapcar 'car shimbun-itmedia-group-alist))
@@ -190,8 +192,8 @@ R[TQ[*i0d##D=I3|g`2yr@sc<pK1SB
 	  (replace-match "\n\\3\n")))
       t)))
 
-(luna-define-method shimbun-clear-contents :around
-  ((shimbun shimbun-itmedia) header)
+(luna-define-method shimbun-clear-contents :around ((shimbun shimbun-itmedia)
+						    header)
   (or (luna-call-next-method)
       (prog1
 	  (let ((case-fold-search t)
