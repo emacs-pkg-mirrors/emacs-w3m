@@ -1,6 +1,6 @@
 ;;; shimbun.el --- interfacing with web newspapers -*- coding: iso-2022-7bit; -*-
 
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ;; Yuuichi Teranishi <teranisi@gohome.org>
 
 ;; Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
@@ -962,35 +962,13 @@ Return nil if all pages should be retrieved."
        (if (eq 'all ,range) nil
 	 ,range))))
 
-(defvar shimbun-use-refresh t
-  "Non-nil means honor the REFRESH attribute in META tags.
-Bind it to nil per shimbun if the refresh brings unwanted page.")
-
-;; FIXME: It seems better that `shimbun-fetch-url' provides the redirection
-;; support, whereas it is currently done by `shimbun-headers-1' for headers
-;; and `shimbun-article-1' for articles separately.  The reason doing so is
-;; that `shimbun-article-1' needs to replace urls in XREFs with the redirected
-;; ones.
-(defun shimbun-headers-1 (shimbun url)
-  "Run `shimbun-fetch-url' and refresh the contents if necessary."
-  (let (;; The default url used when it is not specified for refresh.
-	(w3m-current-url url)
-	(w3m-use-refresh shimbun-use-refresh))
-    (when (and (shimbun-fetch-url shimbun url 'reload)
-	       (progn
-		 (w3m-check-refresh-attribute)
-		 (and w3m-current-refresh
-		      (not (string-equal url (cdr w3m-current-refresh))))))
-      (erase-buffer)
-      (shimbun-headers-1 shimbun (cdr w3m-current-refresh)))))
-
 (luna-define-method shimbun-headers ((shimbun shimbun) &optional range)
   (shimbun-message shimbun (concat shimbun-checking-new-news-format "..."))
   (prog1
       (with-temp-buffer
 	(let ((w3m-verbose (if shimbun-verbose nil w3m-verbose))
 	      headers)
-	  (shimbun-headers-1 shimbun (shimbun-index-url shimbun))
+	  (shimbun-fetch-url shimbun (shimbun-index-url shimbun) 'reload)
 	  (setq headers (shimbun-get-headers shimbun range))
 	  (if (memq (shimbun-japanese-hankaku shimbun) '(body nil))
 	      headers
@@ -1071,13 +1049,12 @@ Return nil when articles are not expired."
 HEADER is a shimbun-header which is obtained by `shimbun-headers'.
 If OUTBUF is not specified, article is retrieved to the current buffer.")
 
-;; See also the FIXME comment around `shimbun-headers-1'.
 (defun shimbun-article-1 (shimbun header)
   "Run `shimbun-fetch-url' and refresh the contents if necessary."
   (let* ((url (shimbun-article-url shimbun header))
 	 ;; The default url used when it is not specified for refresh.
 	 (w3m-current-url url)
-	 (w3m-use-refresh shimbun-use-refresh)
+	 (w3m-use-refresh t)
 	 real)
     (when (shimbun-fetch-url shimbun url nil nil
 			     (shimbun-article-base-url shimbun header))
