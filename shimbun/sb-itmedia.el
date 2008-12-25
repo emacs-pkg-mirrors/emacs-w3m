@@ -1,6 +1,6 @@
 ;;; sb-itmedia.el --- shimbun backend for ITmedia -*- coding: iso-2022-7bit -*-
 
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2004, 2005, 2006, 2007, 2008
 ;; Yuuichi Teranishi <teranisi@gohome.org>
 
 ;; Author: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
@@ -80,10 +80,6 @@ R[TQ[*i0d##D=I3|g`2yr@sc<pK1SB
 
 (defvar shimbun-itmedia-retry-fetching 1)
 (defvar shimbun-itmedia-ignored-subject "^PR:")
-
-(luna-define-method initialize-instance :after ((shimbun shimbun-itmedia)
-						&rest init-args)
-  (shimbun-rss-initialize-ignored-subject shimbun))
 
 (luna-define-method shimbun-groups ((shimbun shimbun-itmedia))
   (mapcar 'car shimbun-itmedia-group-alist))
