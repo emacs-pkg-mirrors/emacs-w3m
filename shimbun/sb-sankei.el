@@ -208,7 +208,10 @@ Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAGFBMVEX///8An/8Vb38CnwB
 	       (shimbun-fetch-url shimbun url)))
 	   (goto-char (point-min))))
 
-    (if (and (re-search-forward "<span[\t\n ]+class=\"timestamp\"" nil t)
+    (if (and (or (re-search-forward "<span[\t\n ]+class=\"timestamp\"" nil t)
+		 (re-search-forward "<!-+[\t\n ]+grok[\t\n ]+target[\t\n ]+\
+title[\t\n ]+end[\t\n ]+-+>"
+				    nil t))
 	     (progn
 	       (setq start (match-end 0))
 	       (re-search-forward "<div[\t\n ]+class=\"_LSUCS\">[\t\n ]*"
@@ -304,7 +307,8 @@ Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAGFBMVEX///8An/8Vb38CnwB
 	    (shimbun-japanese-hankaku-buffer t))
 
 	  ;; Break long lines.
-	  (shimbun-break-long-japanese-lines)
+	  (unless (shimbun-prefer-text-plain-internal shimbun)
+	    (shimbun-break-long-japanese-lines))
 	  (not no-footer))
 
       (erase-buffer)
