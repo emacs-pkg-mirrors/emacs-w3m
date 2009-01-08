@@ -8,8 +8,8 @@
 @synindex pg cp
 
 @copying
-Copyright @copyright{} 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-2008, 2009 @w{TSUCHIYA Masatoshi}
+Copyright @copyright{} 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+@w{TSUCHIYA Masatoshi}
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -27,6 +27,10 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.
 @end quotation
 @end copying
+
+@ifnottex
+@insertcopying
+@end ifnottex
 
 @dircategory GNU Emacs Lisp
 @direntry
@@ -49,8 +53,7 @@ This edition is for emacs-w3m version @value{VERSION}.
 @insertcopying
 @end titlepage
 
-@contents
-
+@ifnottex
 @node Top
 @top Emacs-w3m User's Manual
 
@@ -60,8 +63,6 @@ The emacs-w3m development team
 
 This manual corresponds to emacs-w3m version @value{VERSION}.
 
-@ifnottex
-@insertcopying
 @end ifnottex
 
 @menu
@@ -116,7 +117,6 @@ Pretty Good Features
 * Using Namazu::                Searching files with Namazu
 * Octet::                       Viewing data in various octal form
 * Frame Local Buffers::         Grouping sessions into separate frames
-* Session Manager::             Saving and loading sessions
 
 Customizable Variables
 
@@ -132,7 +132,6 @@ Customizable Variables
 * Perldoc Variables::           Variables related to perldoc
 * Namazu Variables::            Variables related to namazu
 * Octet Variables::             Variables related to the octet feature
-* Session Manager Variables::   Variables related to session manager
 * Hooks::                       Hooks
 * Other Variables::             Other variables
 
@@ -1895,7 +1894,6 @@ emacs-w3m with other commands and Emacs subsystems.
 * Using Namazu::                Searching files with Namazu
 * Octet::                       Viewing data in various octal form
 * Frame Local Buffers::         Grouping sessions into separate frames
-* Session Manager::             Saving and loading sessions
 @end menu
 
 @node Using Search Engines
@@ -2317,84 +2315,6 @@ those frames.  In other words, sessions associated with one frame don't
 appear in other frames.  @code{w3m-fb-mode} doesn't create any new
 frames, so you need to make them yourself in some way.
 
-@node Session Manager
-@section Saving and loading sessions
-
-It is possible to save and load the emacs-w3m sessions sets.
-
-@kindex @kbd{M-S}
-You can save the set of the currently opened sessions for the future
-use.  Just hit @kbd{M-S} and name the set.
-
-@kindex @kbd{M-s}
-@findex w3m-session-select
-Then you will ask how to take the saved sessions set back, won't you?
-Hit @kbd{M-s} to open the sessions selection menu.  The available
-command keys include:
-
-@table @asis
-@item @kbd{@key{RET}}
-@findex w3m-session-select-select
-Open all the sessions of the selected sessions set.
-
-@item @kbd{M-s}
-@findex w3m-session-select-open-session-group
-Open the detail menu for the selected sessions set.  You can open the
-sessions one by one in that menu.
-
-@item @kbd{d}
-@findex w3m-session-select-delete
-Delete the selected sessions set or the session.
-
-@item @kbd{r}
-@findex w3m-session-select-rename
-Rename the selected sessions set.
-
-@item @kbd{s}
-@findex w3m-session-select-save
-Save all the opened sessions.  So does @kbd{M-S}.
-
-@item @kbd{n}
-@findex w3m-session-select-next
-Move the cursor to the next sessions set.
-
-@item @kbd{p}
-@findex w3m-session-select-previous
-Move the cursor to the previous sessions set.
-
-@item @kbd{q}
-@findex w3m-session-select-quit
-Quit the sessions selection menu.
-@end table
-
-@vindex w3m-session-deleted-save
-@vindex w3m-session-automatic-save
-Emacs-w3m saves some sessions automatically.  If
-@code{w3m-session-deleted-save} is non-@code{nil}, emacs-w3m saves the
-closed sessions automatically.  This would be helpful for recovering a
-session that has been closed inadvertently.  If
-@code{w3m-session-automatic-save} is non-@code{nil}, emacs-w3m saves the
-opened sessions automatically when quitting emacs-w3m.
-
-@vindex w3m-session-load-last-sessions
-Sometimes you might forget the URLs of the pages you viewed with the
-interest.  Of course emacs-w3m helps you even in such a case.  If
-@code{w3m-session-load-last-sessions} is non-@code{nil}, emacs-w3m
-automatically opens the sessions set viewed last.  If it is @code{ask},
-you will be asked whether to take the set back (default @code{nil}).
-
-@vindex w3m-session-crash-recovery
-@vindex w3m-session-load-crashed-sessions
-You may have had a bad experience with a crash. It makes you
-disappointing, and makes displayed web pages lost. Emacs-w3m helps you
-also in such a case. If @code{w3m-session-crash-recovery} is
-non-@code{nil}, emacs-w3m saves displayed sessions set to use for crash
-recovering automatically and recovers saved sessions when emacs-w3m (or
-emacs, etc) crashes (default @code{t}). If
-@code{w3m-session-load-crashed-sessions} is non-@code{nil}, emacs-w3m
-automatically recovers the crashed sessions set. If it is @code{ask},
-you will be asked whether to recover the set (default @code{ask}).
-
 @node Customizable Variables
 @chapter Customizable variables
 @cindex Customizing user options
@@ -2453,7 +2373,6 @@ words, @file{~/.emacs-w3m.elc}, @file{~/.emacs-w3m.el} and
 * Perldoc Variables::           Variables related to perldoc
 * Namazu Variables::            Variables related to namazu
 * Octet Variables::             Variables related to the octet feature
-* Session Manager Variables::   Variables related to session manager
 * Hooks::                       Hooks
 * Other Variables::             Other variables
 @end menu
@@ -3636,44 +3555,6 @@ the value of @code{namazu-search-num} if any, or @code{30}.
 @cindex Variables related to the octet feature
 
 There is no user option for the moment.
-
-@node Session Manager Variables
-@section Variables related to session manager
-@cindex Variables related to session manager
-
-@table @code
-@item w3m-session-file
-@vindex w3m-session-file
-File name to keep sessions.
-
-@item w3m-session-time-format
-@vindex w3m-session-time-format
-Format of saved time.
-
-@item w3m-session-automatic-title
-@vindex w3m-session-automatic-title
-String of title to save session automatically.
-
-@item w3m-session-deleted-title
-@vindex w3m-session-deleted-title
-String of title to save session when buffer delete.
-
-@item w3m-session-crash-recovery-title
-@vindex w3m-session-crash-recovery-title
-String of title to save session to use for crash recovering.
-
-@item w3m-session-deleted-keep-number
-@vindex w3m-session-deleted-keep-number
-Number to keep sessions when buffers delete.
-
-@item w3m-session-automatic-keep-number
-@vindex w3m-session-automatic-keep-number
-Number to keep sessions automatically.
-
-@item w3m-session-unknown-title
-@vindex w3m-session-unknown-title
-String of title to use when title is not specified.
-@end table
 
 @node Hooks
 @section Hooks
@@ -5166,7 +5047,7 @@ asahi.shopping asahi.shopping.column asahi.shopping.yakimono
 asahi.shougi asahi.sports asahi.sports.baseball asahi.sports.battle
 asahi.sports.etc asahi.sports.football asahi.sports.golf
 asahi.sports.rugby asahi.sports.usa asahi.sports.winter asahi.tenjin
-asahi.travel asahi.wakata
+asahi.travel
 
 Those groups generate articles containing only text by default.  If you
 would like to make them generate HTML articles that contain not only
@@ -5206,11 +5087,11 @@ gendai-net.wadai gendai-net.kenko gendai-net.syoku gendai-net.book
 
 @item @uref{http://mainichi.jp/, Mainichi jp}
 @itemx (This site has been shifted from MSN in October, 2007)
-mainichi.flash mainichi.sports mainichi.entertainment
-mainichi.entertainment.art mainichi.mantan mainichi.electronics
-mainichi.weekly mainichi.opinion.editorial mainichi.opinion.yoroku
-mainichi.opinion.hasshinbako mainichi.opinion.eye mainichi.opinion.hito
-mainichi.opinion.kinji mainichi.opinion.yuraku mainichi.opinion.closeup
+mainichi.flash mainichi.sports mainichi.entertainment mainichi.mantan
+mainichi.electronics mainichi.weekly mainichi.opinion.editorial
+mainichi.opinion.yoroku mainichi.opinion.hasshinbako
+mainichi.opinion.eye mainichi.opinion.hito mainichi.opinion.kinji
+mainichi.opinion.yuraku mainichi.opinion.closeup
 mainichi.opinion.kaisetsu mainichi.opinion.newsup
 
 Those groups generate HTML articles containing photographs by default.
@@ -6905,8 +6786,6 @@ TSUCHIYA Masatoshi
 Katsumi Yamaoka
 @item
 Masatake YAMATO
-@item
-Naohiro Aota
 @end itemize
 
 @node Index
@@ -6935,6 +6814,8 @@ Naohiro Aota
 @unnumberedsec Function Index
 @printindex fn
 
+@summarycontents
+@contents
 @bye
 
 @c Local Variables:
