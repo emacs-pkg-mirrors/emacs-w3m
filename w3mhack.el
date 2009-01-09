@@ -827,8 +827,10 @@ NOTE: This function must be called from the top directory."
 				      (string-match
 				       "\\`Japanese"
 				       current-language-environment)
-				      (boundp 'locale-coding-system)
-				      locale-coding-system)
+				      (or (and (boundp 'locale-coding-system)
+					       locale-coding-system)
+					  (and (boundp 'terminal-coding-system)
+					       terminal-coding-system)))
 				 'iso-2022-7bit)))
 			(byte-compile
 			 (cond ((featurep 'xemacs)

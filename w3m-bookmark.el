@@ -1,6 +1,6 @@
 ;;; w3m-bookmark.el --- Functions to operate bookmark file of w3m
 
-;; Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007
 ;; TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Authors: Shun-ichi GOTO     <gotoh@taiyo.co.jp>,
@@ -360,9 +360,7 @@ With prefix, ask for a new url instead of the present one."
 (defun w3m-bookmark-view (&optional reload)
   "Display the bookmark."
   (interactive "P")
-  (if (file-exists-p w3m-bookmark-file)
-      (w3m-goto-url "about://bookmark/" reload)
-    (message "No bookmark file is available")))
+  (w3m-goto-url "about://bookmark/" reload))
 
 ;;;###autoload
 (defun w3m-bookmark-view-new-session (&optional reload)
@@ -370,9 +368,7 @@ With prefix, ask for a new url instead of the present one."
   (interactive "P")
   (if (not (eq major-mode 'w3m-mode))
       (message "This command can be used in w3m mode only")
-    (if (file-exists-p w3m-bookmark-file)
-	(w3m-view-this-url-1 "about://bookmark/" reload 'new-session)
-      (message "No bookmark file is available"))))
+    (w3m-view-this-url-1 "about://bookmark/" reload 'new-session)))
 
 ;;;###autoload
 (defun w3m-about-bookmark (&rest args)
@@ -565,8 +561,7 @@ Format as (list (\"Group name\" . (\"Entry URL\" . \"Entry name\")* )* )."
 		    (w3m-bookmark-file-modtime)))
 	w3m-bookmark-menu-items-pre
       (setq w3m-bookmark-menu-items-time (w3m-bookmark-file-modtime))
-      (let ((entries (when (file-exists-p w3m-bookmark-file)
-		       (w3m-bookmark-iterator))))
+      (let ((entries (w3m-bookmark-iterator)))
 	(setq w3m-bookmark-menu-items-pre
 	      (and entries
 		   (mapcar
