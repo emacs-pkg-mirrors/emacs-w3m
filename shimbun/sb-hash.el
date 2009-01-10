@@ -1,6 +1,6 @@
 ;;; sb-hash.el --- shimbun backend for contents hashing -*- coding: iso-2022-7bit -*-
 
-;; Copyright (C) 2006, 2009 Tsuyoshi CHO <tsuyoshi_cho@ybb.ne.jp>
+;; Copyright (C) 2006 Tsuyoshi CHO <tsuyoshi_cho@ybb.ne.jp>
 
 ;; Author: Tsuyoshi CHO <tsuyoshi_cho@ybb.ne.jp>
 ;; Keywords: shimbun
@@ -48,50 +48,52 @@
 (require 'shimbun)
 
 (eval-and-compile
-  (luna-define-class content-hash () (hash))
-  (luna-define-internal-accessors 'content-hash))
+  (luna-define-class shimbun-hash (shimbun) (content-hash))
+  (luna-define-internal-accessors 'shimbun-hash))
 
-(defvar content-hash-content-hash-length 31)
+(defvar shimbun-hash-content-hash-length 31)
 
-(luna-define-method initialize-instance :after ((content content-hash)
+(luna-define-method initialize-instance :after ((shimbun shimbun-hash)
 						&rest init-args)
-  (content-hash-set-hash-internal
-   content
-   (make-vector content-hash-content-hash-length 0))
-  content)
+  (shimbun-hash-set-content-hash-internal
+   shimbun
+   (make-vector shimbun-hash-content-hash-length 0))
+  shimbun)
 
-(luna-define-generic content-hash-get-item (content id)
+(luna-define-generic shimbun-hash-get-item (shimbun id)
   "Return target ID related contents.")
-(luna-define-method content-hash-get-item ((content content-hash) id)
-  (let ((sym (intern-soft id (content-hash-hash-internal content))))
+(luna-define-method shimbun-hash-get-item ((shimbun shimbun-hash) id)
+  (let ((sym (intern-soft
+	      id (shimbun-hash-content-hash-internal shimbun))))
     (when sym
       (symbol-value sym))))
 
-(luna-define-generic content-hash-set-item (content id item)
+(luna-define-generic shimbun-hash-set-item (shimbun id item)
   "Save ID related contents ITEM to hash.")
-(luna-define-method content-hash-set-item ((content content-hash) id item)
-  (set (intern id (content-hash-hash-internal content)) item))
+(luna-define-method shimbun-hash-set-item ((shimbun shimbun-hash) id item)
+  (set (intern id (shimbun-hash-content-hash-internal shimbun)) item))
 
-(luna-define-generic content-hash-contents-url (content shimbun)
+(luna-define-generic shimbun-hash-contents-url (shimbun)
   "Return contents url.")
-(luna-define-method content-hash-contents-url ((content content-hash) shimbun)
+(luna-define-method shimbun-hash-contents-url ((shimbun shimbun-hash))
   (shimbun-index-url shimbun))
 
-(luna-define-generic content-hash-update-items (content shimbun)
+(luna-define-generic shimbun-hash-update-items (shimbun)
   "Update hash items.
-Call timing for `shimbun-get-headers' and `content-hash-shimbun-article'
-(`shimbun-make-contents'). Need implements `content-hash-update-items-impl'.")
-(luna-define-method content-hash-update-items ((content content-hash) shimbun)
+Call timing for `shimbun-get-headers' and `shimbun-article'
+(`shimbun-make-contents'). Need implements `shimbun-hash-update-items-impl'.")
+(luna-define-method shimbun-hash-update-items ((shimbun shimbun-hash))
   (with-temp-buffer
     (erase-buffer)
-    (shimbun-retrieve-url (content-hash-contents-url content shimbun)
+    (shimbun-retrieve-url (shimbun-hash-contents-url shimbun)
 			  'reload)
-    (content-hash-update-items-impl content shimbun)))
+    (shimbun-hash-update-items-impl shimbun)))
 
-(luna-define-generic content-hash-update-items-impl (content shimbun)
+(luna-define-generic shimbun-hash-update-items-impl (shimbun)
   "Update hash items main routine (need implements).")
 
-(defun content-hash-shimbun-article (content shimbun header &optional outbuf)
+(luna-define-method shimbun-article ((shimbun shimbun-hash) header
+				     &optional outbuf)
   (when (shimbun-current-group-internal shimbun)
     (with-current-buffer (or outbuf (current-buffer))
       (w3m-insert-string
@@ -100,11 +102,11 @@ Call timing for `shimbun-get-headers' and `content-hash-shimbun-article'
 	     (let ((buf-string nil)
 		   id)
 	       (setq id (shimbun-header-id header))
-	       (setq buf-string (content-hash-get-item content id))
+	       (setq buf-string (shimbun-hash-get-item shimbun id))
 	       (unless buf-string
-		 (content-hash-update-items content shimbun)
-		 (setq buf-string (content-hash-get-item
-				   content (shimbun-header-id header))))
+		 (shimbun-hash-update-items shimbun)
+		 (setq buf-string (shimbun-hash-get-item
+				   shimbun (shimbun-header-id header))))
 	       (when buf-string
 		 (insert buf-string)
 		 (shimbun-message shimbun "shimbun: Make contents...")

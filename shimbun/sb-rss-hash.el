@@ -1,6 +1,6 @@
 ;;; sb-rss-hash.el --- shimbun backend for rss description -*- coding: iso-2022-7bit -*-
 
-;; Copyright (C) 2006, 2009 Tsuyoshi CHO <tsuyoshi_cho@ybb.ne.jp>
+;; Copyright (C) 2006 Tsuyoshi CHO <tsuyoshi_cho@ybb.ne.jp>
 
 ;; Author: Tsuyoshi CHO <tsuyoshi_cho@ybb.ne.jp>
 ;; Keywords: shimbun
@@ -30,19 +30,24 @@
 (require 'sb-hash)
 
 (eval-and-compile
-  (luna-define-class rss-content-hash (content-hash) ())
-  (luna-define-class shimbun-rss-hash (shimbun-rss) (content)))
+  (luna-define-class shimbun-rss-hash (shimbun-hash shimbun-rss) ()))
 
 (defvar shimbun-rss-hash-group-path-alist
   '(;; name rss-url type(opt:html is t) content-start(opt) content-end(opt)
     ))
 
-(luna-define-method content-hash-update-items ((content-hash rss-content-hash)
-					       shimbun)
+(luna-define-method shimbun-groups ((shimbun shimbun-rss-hash))
+  (mapcar 'car shimbun-rss-hash-group-path-alist))
+
+(luna-define-method shimbun-index-url ((shimbun shimbun-rss-hash))
+  (nth 1 (assoc (shimbun-current-group-internal shimbun)
+		shimbun-rss-hash-group-path-alist)))
+
+(luna-define-method shimbun-hash-update-items ((shimbun shimbun-rss-hash))
   (with-temp-buffer
     (let ((case-fold-search t))
       (shimbun-retrieve-url
-       (content-hash-contents-url content-hash shimbun) 'no-cache 'no-decode)
+       (shimbun-hash-contents-url shimbun) 'no-cache 'no-decode)
       ;; In some rss feeds, LFs might be used mixed with CRLFs.
       (shimbun-strip-cr)
       (insert
@@ -50,10 +55,9 @@
 	   (decode-coding-string (buffer-string) (shimbun-rss-get-encoding))
 	 (erase-buffer)
 	 (set-buffer-multibyte t)))
-      (content-hash-update-items-impl content-hash shimbun))))
+      (shimbun-hash-update-items-impl shimbun))))
 
-(luna-define-method content-hash-update-items-impl
-  ((content-hash rss-content-hash) shimbun)
+(luna-define-method shimbun-hash-update-items-impl ((shimbun shimbun-rss-hash))
   (let (xml dc-ns rss-ns content-ns
 	(buf-str (buffer-string)))
     (with-temp-buffer
@@ -65,7 +69,7 @@
 		    (xml-parse-region (point-min) (point-max))
 		  (error
 		   (message "Error while parsing %s: %s"
-			    (content-hash-contents-url content-hash shimbun)
+			    (shimbun-hash-contents-url shimbun)
 			    (error-message-string err))
 		   nil)))
       (when xml
@@ -82,8 +86,8 @@
 			  (shimbun-rss-node-text rss-ns 'link (cddr item)))))
 	    (when url
 	      (let* ((date (or (shimbun-rss-get-date shimbun url)
-			       (shimbun-rss-node-text dc-ns 'date item)
-			       (shimbun-rss-node-text rss-ns 'pubDate item)))
+			     (shimbun-rss-node-text dc-ns 'date item)
+			     (shimbun-rss-node-text rss-ns 'pubDate item)))
 		     (id (shimbun-rss-build-message-id shimbun url date))
 		     (content (shimbun-rss-node-text
 			       content-ns 'encoded item))
@@ -96,29 +100,16 @@
 		    (setq content (match-string 1 content))))
 		;; save contents
 		(when (and id (or content description))
-		  (content-hash-set-item content-hash id
+		  (shimbun-hash-set-item shimbun id
 					 (or content description)))))))))))
-
-(luna-define-method initialize-instance :after ((shimbun shimbun-rss-hash)
-						&rest init-args)
-  (luna-set-slot-value shimbun 'content
-		       (luna-make-entity 'rss-content-hash))
-  shimbun)
-
-(luna-define-method shimbun-groups ((shimbun shimbun-rss-hash))
-  (mapcar 'car shimbun-rss-hash-group-path-alist))
-
-(luna-define-method shimbun-index-url ((shimbun shimbun-rss-hash))
-  (nth 1 (assoc (shimbun-current-group-internal shimbun)
-		shimbun-rss-hash-group-path-alist)))
 
 (luna-define-method shimbun-get-headers :before ((shimbun shimbun-rss-hash)
 						 &optional range)
-  (content-hash-update-items-impl (luna-slot-value shimbun 'content) shimbun))
+  (shimbun-hash-update-items-impl shimbun))
 
 (luna-define-method shimbun-make-contents ((shimbun shimbun-rss-hash) header)
     (if (nth 2 (assoc (shimbun-current-group-internal shimbun)
-		      shimbun-rss-hash-group-path-alist))
+			     shimbun-rss-hash-group-path-alist))
 	(shimbun-make-html-contents shimbun header)
       (shimbun-make-text-contents shimbun header)))
 
@@ -138,11 +129,6 @@
       (delete-region (match-beginning 0) (point-max))
       (delete-region (point-min) start)
       t)))
-
-(luna-define-method shimbun-article ((shimbun shimbun-rss-hash) header
-				     &optional outbuf)
-  (content-hash-shimbun-article (luna-slot-value shimbun 'content)
-				shimbun header outbuf))
 
 (provide 'sb-rss-hash)
 
