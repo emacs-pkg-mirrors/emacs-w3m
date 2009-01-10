@@ -307,13 +307,11 @@ stored in the `w3m-favicon-image' buffer-local variable."
 	(w3m-favicon-set-image (w3m-favicon-cache-favicon url)))
     (lexical-let ((url url)
 		  (type type)
-		  (target target)
-		  (silent w3m-message-silent))
+		  (target target))
       (w3m-process-with-null-handler
 	(w3m-process-do-with-temp-buffer
 	    (ok (w3m-retrieve url 'raw nil nil nil handler))
-	  (let ((w3m-message-silent silent)
-		idata image)
+	  (let (idata image)
 	    (if (and ok
 		     ;; Some broken servers provides empty contents.
 		     (>= (buffer-size) 4))
