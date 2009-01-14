@@ -1,6 +1,6 @@
 ;;; sb-mainichi.el --- shimbun backend for Mainichi jp -*- coding: iso-2022-7bit; -*-
 
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ;; Koichiro Ohba <koichiro@meadowy.org>
 
 ;; Author: Koichiro Ohba <koichiro@meadowy.org>
@@ -33,10 +33,9 @@
 ;;; Code:
 
 (require 'sb-rss)
-(require 'sb-multi)
 
 (luna-define-class shimbun-mainichi (shimbun-japanese-newspaper
-				     shimbun-multi shimbun-rss) ())
+				     shimbun-rss) ())
 
 (defvar shimbun-mainichi-url "http://mainichi.jp/")
 
@@ -80,9 +79,7 @@
     ("opinion.kaisetsu" "土曜解説"
      "http://mainichi.jp/select/opinion/kaisetsu/")
     ("opinion.newsup" "ニュースＵＰ"
-     "http://mainichi.jp/select/opinion/newsup/")
-    ("entertainment.art" "芸術・文化"
-     "http://mainichi.jp/enta/art/archive/")))
+     "http://mainichi.jp/select/opinion/newsup/")))
 
 (defvar shimbun-mainichi-x-face-alist
   '(("default" . "\
@@ -225,21 +222,6 @@ Face: iVBORw0KGgoAAAANSUhEUgAAABwAAAAcBAMAAACAI8KnAAAABGdBTUEAALGPC/xhBQAAABh
 	  (throw 'stop nil))))
     headers))
 
-(luna-define-method shimbun-multi-next-url ((shimbun shimbun-mainichi)
-					    header url)
-  (shimbun-mainichi-multi-next-url shimbun header url))
-
-(defun shimbun-mainichi-multi-next-url (shimbun header url)
-  (goto-char (point-min))
-  (when (and (re-search-forward "\
-<div[\t\n ]\\(?:[^\t\n >]+[\t\n ]+\\)*class=\"PageBtn\""
-				nil t)
-	     (shimbun-end-of-tag "div")
-	     (re-search-backward "\
-<a[\t\n ]+href=\"\\([^\"]+\\)\"[^>]*>[\t\n ]*次へ[^<]*</a>"
-				 (match-beginning 0) t))
-    (shimbun-expand-url (match-string 1) url)))
-
 (luna-define-method shimbun-clear-contents :around ((shimbun shimbun-mainichi)
 						    header)
   (shimbun-mainichi-clear-contents shimbun header))
@@ -311,23 +293,6 @@ Face: iVBORw0KGgoAAAANSUhEUgAAABwAAAAcBAMAAACAI8KnAAAABGdBTUEAALGPC/xhBQAAABh
 \(さもなければ通常とは異なる形式を使っているか、<br>\n\
 &nbsp;または取得に失敗したのかもしれません。)</body></html>\n")
       nil)))
-
-(luna-define-method shimbun-multi-clear-contents :around ((shimbun
-							   shimbun-mainichi)
-							  header
-							  has-previous-page
-							  has-next-page)
-  (shimbun-mainichi-multi-clear-contents shimbun header
-					 has-previous-page has-next-page))
-
-(defun shimbun-mainichi-multi-clear-contents (shimbun header
-						      has-previous-page
-						      has-next-page)
-  (when (luna-call-next-method)
-    (when has-previous-page
-      (goto-char (point-min))
-      (insert "&#012;\n"))
-    t))
 
 (provide 'sb-mainichi)
 

@@ -8,8 +8,8 @@
 @synindex pg cp
 
 @copying
-Copyright @copyright{} 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-2008, 2009 @w{TSUCHIYA Masatoshi}
+Copyright @copyright{} 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+@w{TSUCHIYA Masatoshi}
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -27,6 +27,10 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.
 @end quotation
 @end copying
+
+@ifnottex
+@insertcopying
+@end ifnottex
 
 @dircategory GNU Emacs Lisp
 @direntry
@@ -49,8 +53,7 @@ This edition is for emacs-w3m version @value{VERSION}.
 @insertcopying
 @end titlepage
 
-@contents
-
+@ifnottex
 @node Top
 @top Emacs-w3m User's Manual
 
@@ -60,8 +63,6 @@ The emacs-w3m development team
 
 This manual corresponds to emacs-w3m version @value{VERSION}.
 
-@ifnottex
-@insertcopying
 @end ifnottex
 
 @menu
@@ -2379,21 +2380,9 @@ opened sessions automatically when quitting emacs-w3m.
 @vindex w3m-session-load-last-sessions
 Sometimes you might forget the URLs of the pages you viewed with the
 interest.  Of course emacs-w3m helps you even in such a case.  If
-@code{w3m-session-load-last-sessions} is non-@code{nil}, emacs-w3m
+@code{w3m-session-load-last-sessions} is @code{auto}, emacs-w3m
 automatically opens the sessions set viewed last.  If it is @code{ask},
 you will be asked whether to take the set back (default @code{nil}).
-
-@vindex w3m-session-crash-recovery
-@vindex w3m-session-load-crashed-sessions
-You may have had a bad experience with a crash. It makes you
-disappointing, and makes displayed web pages lost. Emacs-w3m helps you
-also in such a case. If @code{w3m-session-crash-recovery} is
-non-@code{nil}, emacs-w3m saves displayed sessions set to use for crash
-recovering automatically and recovers saved sessions when emacs-w3m (or
-emacs, etc) crashes (default @code{t}). If
-@code{w3m-session-load-crashed-sessions} is non-@code{nil}, emacs-w3m
-automatically recovers the crashed sessions set. If it is @code{ask},
-you will be asked whether to recover the set (default @code{ask}).
 
 @node Customizable Variables
 @chapter Customizable variables
@@ -3173,11 +3162,6 @@ Non-@code{nil} means honor the REFRESH attribute in META tags.
 Emacs-w3m arbitrarily takes you to a url specified by that attribute.
 Note that they may be malicious traps.
 
-@item w3m-refresh-minimum-interval
-@vindex w3m-refresh-minimum-interval
-Minimum seconds to wait for refresh, when visiting a page by
-history-back or history-next.
-
 @item w3m-use-symbol
 @vindex w3m-use-symbol
 Non-@code{nil} means replace symbols that the @samp{<_SYMBOL>} tags lead
@@ -3662,10 +3646,6 @@ String of title to save session automatically.
 @item w3m-session-deleted-title
 @vindex w3m-session-deleted-title
 String of title to save session when buffer delete.
-
-@item w3m-session-crash-recovery-title
-@vindex w3m-session-crash-recovery-title
-String of title to save session to use for crash recovering.
 
 @item w3m-session-deleted-keep-number
 @vindex w3m-session-deleted-keep-number
@@ -5171,7 +5151,7 @@ asahi.shopping asahi.shopping.column asahi.shopping.yakimono
 asahi.shougi asahi.sports asahi.sports.baseball asahi.sports.battle
 asahi.sports.etc asahi.sports.football asahi.sports.golf
 asahi.sports.rugby asahi.sports.usa asahi.sports.winter asahi.tenjin
-asahi.travel asahi.wakata
+asahi.travel
 
 Those groups generate articles containing only text by default.  If you
 would like to make them generate HTML articles that contain not only
@@ -5211,11 +5191,11 @@ gendai-net.wadai gendai-net.kenko gendai-net.syoku gendai-net.book
 
 @item @uref{http://mainichi.jp/, Mainichi jp}
 @itemx (This site has been shifted from MSN in October, 2007)
-mainichi.flash mainichi.sports mainichi.entertainment
-mainichi.entertainment.art mainichi.mantan mainichi.electronics
-mainichi.weekly mainichi.opinion.editorial mainichi.opinion.yoroku
-mainichi.opinion.hasshinbako mainichi.opinion.eye mainichi.opinion.hito
-mainichi.opinion.kinji mainichi.opinion.yuraku mainichi.opinion.closeup
+mainichi.flash mainichi.sports mainichi.entertainment mainichi.mantan
+mainichi.electronics mainichi.weekly mainichi.opinion.editorial
+mainichi.opinion.yoroku mainichi.opinion.hasshinbako
+mainichi.opinion.eye mainichi.opinion.hito mainichi.opinion.kinji
+mainichi.opinion.yuraku mainichi.opinion.closeup
 mainichi.opinion.kaisetsu mainichi.opinion.newsup
 
 Those groups generate HTML articles containing photographs by default.
@@ -6940,6 +6920,8 @@ Naohiro Aota
 @unnumberedsec Function Index
 @printindex fn
 
+@summarycontents
+@contents
 @bye
 
 @c Local Variables:
