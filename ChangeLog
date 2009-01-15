@@ -1,3 +1,176 @@
+2009-01-15  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (w3m-fontify-images): Put the 'full alt text' on new
+	'w3m-image-alt' property.
+	(w3m-print-this-url): Print the content of 'w3m-image-alt'.
+
+	* w3m-util.el (w3m-image-alt): New macro.
+
+2009-01-14  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* doc/Makefile.in (.texi.info): Use --no-split.
+
+2009-01-11  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m): Move last session restoring asking afterward, so that
+	the restoring wouldn't be avoided by w3m-input-url's input.
+
+	* w3m-session.el (w3m-session-last-autosave-session): Follow the above
+	change.
+
+2009-01-10  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m): Check whether to load the last autosaved
+	sessions.  Suggested by Samuel Wales <samologist@gmail.com>.
+
+	* w3m-session.el (w3m-session-automatic-keep-number): New variable.
+	Suggested by Samuel Wales <samologist@gmail.com>.
+	(w3m-session-automatic-save): Use it.
+	(w3m-session-last-autosave-session): New function.
+	(w3m-session-load-last-sessions): New variable.
+
+	* w3m.el (w3m-image-anchor): New face.
+	(w3m-fontify-images): Use it.
+
+2009-01-09  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-language): Allow the value like "Japanese (UTF-8)" of
+	current-language-environment.
+
+	* w3m-symbol.el (w3m-symbol): Ditto.
+
+	* w3mhack.el (w3mhack-makeinfo): Use locale-coding-system for Emacs to
+	encode Japanese messages.
+
+2009-01-09  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m-create-text-page, w3m-goto-url): Check if the url is
+	arrived before getting real-url.
+
+2009-01-06  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (top): Add the variable definitions of
+	`w3m-tab-menubar-make-items-preitems' and `w3m-session-menu-items-pre'
+	to avoid byte-compile warnings.
+	(w3m-setup-menu): Move the postion of session menu.
+	(w3m-mouse-major-mode-menu): Add session menu.
+
+	* w3m-xmas.el (autoload): Add w3m-setup-session-menu.
+	(w3m-menu-on-forefront): Treat "Session" menu.
+	(w3m-setup-menu): Call `w3m-setup-session-menu'.
+
+2008-12-30  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (w3m-select-buffer-mode-map): Bind `w3m-select-buffer-quit' to
+	C-g.
+
+	* w3m-session.el (w3m-session-select-mode-map): Bind
+	`w3m-session-select-quit' to C-g.
+
+	* w3m-form.el (w3m-form-input-select-keymap): Bind
+	`w3m-form-input-select-keymap' to C-g.
+	(w3m-form-input-map-keymap): Bind `w3m-form-input-map-exit' to C-g.
+
+2008-12-17  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m-session.el (w3m-session-select-mode-map): Add new key.
+	(w3m-session-select-mode): Modify doc-string.
+	(w3m-session-select-rename): New command.
+	(w3m-session-rename): New function.
+
+2008-12-17  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (autoload): Add w3m-setup-session-menu.
+	(w3m-menubar): Moved session menu to w3m-session-menu-items.
+	(top): Call w3m-setup-session-menu.
+
+	* w3m-session.el: Change to use major mode; Add session menu.
+	(w3m-session-unknown-title): New option.
+
+2008-12-15  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-compatible-encoding-alist): Add (gb2312 . gbk).
+
+2008-12-12  David Engster  <dengste@eml.cc>
+
+	* w3m-proc.el (w3m-process-wait-process): Reduce sit-for time.
+	(w3m-process-sentinel): Wait for process output (on Emacs only).
+
+2008-12-08  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-show-redirection-error-information): Improve the
+	error message.
+
+2008-12-10  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m.el (w3m-next-anchor): Go to the first anchor when next
+	anchor is not found.
+	(w3m-previous-anchor): Go to the last anchor when previous anchor
+	is not found.
+	(w3m-url-encode-string): Encode SPC only when encode-space is
+	non-nil.
+
+	* w3m-form.el (w3m-form-make-form-data): Follow the above change.
+
+	* w3m.el (w3m-gmane-url-at-point): Ditto.
+	(w3m-canonicalize-url): Ditto.
+
+2008-12-08  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m-ems.el (w3m-make-ccl-coding-system): Use define-coding-system if
+	it is available.
+
+2008-12-06  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m.el (w3m-show-redirection-error-information): New function.
+	(w3m-retrieve-and-render): Use it.
+	(w3m-w3m-retrieve-1): Return 'redirection-exceeded if redirect counter
+	exceeded.
+	(w3m-w3m-retrieve): Return "X-w3m-error/redirection" if attr eq
+	'redirection-exceeded.
+	(w3m-w3m-attributes-1): Return dummy attribute if redirect counter
+	exceeded.
+
+2008-12-05  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m-form.el (w3m-same-window-p): New function.
+	(w3m-form-input-textarea): Use it.
+
+	* w3m.el (w3m-local-find-file-regexps): Try to open with emacs-w3m as
+	many types as possible.
+
+2008-12-03  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-fontify): Remove hidden anchors like "<a href=url> </a>".
+	cf. [emacs-w3m:10484]
+
+2008-12-01  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m-form.el (w3m-form-input-textarea): Use the whole current window
+	for the textarea when `same-window-buffer-names' contains the buffer
+	name "*w3m form textarea*"; simplify the window size calculation.
+
+2008-11-21  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m.el (w3m-w3m-parse-header): Also remove parameters when charset is
+	specified.
+
+2008-11-11  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m-util.el (w3m-visited-file-modtime): New function.
+
+	* w3m-bookmark.el (w3m-bookmark-file-modtime): Just return result of
+	file-attributes().
+
+2008-11-11  Naohiro Aota  <nao.aota@gmail.com>
+
+	* w3m-antenna.el (w3m-antenna-check-rss): Support RSS2.0. Check also
+	items.
+	(w3m-antenna-alist): Update site-class if needed.
+
+	* w3m-bookmark.el (w3m-bookmark-buffer, w3m-bookmark-verify-modtime):
+	Replace visited-file-modtime with w3m-visited-file-modtime.
+
 2008-10-28  Naohiro Aota  <nao.aota@gmail.com>
 
 	* w3m.el (w3m-view-header): Check if current page is source of
@@ -8386,7 +8559,7 @@
 	* w3m-bug.el: New file.
 
 	* w3m.el: Autoload "w3m-bug" for `report-emacs-w3m-bug'.
-	(w3m-lynx-like-map): Bind `report-emacs-w3m-bug' to C-cb.
+	(w3m-lynx-like-map): Bind `report-emacs-w3m-bug' to C-cb.<
 	(w3m-info-like-map): Ditto.
 
 	* w3m-om.el (compose-mail): New function.
