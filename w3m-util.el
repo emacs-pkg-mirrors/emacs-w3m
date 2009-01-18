@@ -211,6 +211,15 @@ to the position where the property exists."
       `(get-text-property ,position 'w3m-image)
     `(w3m-get-text-property-around 'w3m-image)))
 
+(defmacro w3m-image-alt (&optional position)
+  "Return the value of the `w3m-image-alt' property at the given POSITION.
+NOTE: If POSITION is omitted, it searches for the property in one
+character before and behind the current position, and point will move
+to the position where the property exists."
+  (if position
+      `(get-text-property ,position 'w3m-image-alt)
+    `(w3m-get-text-property-around 'w3m-image-alt)))
+
 (defmacro w3m-submit (&optional position)
   "Return the value of the `w3m-submit' property at the given POSITION.
 NOTE: If POSITION is omitted, it searches for the property in one
@@ -1130,6 +1139,23 @@ If SECONDS is omitted, it defaults to 0.5."
   (save-excursion
     (set-buffer buffer)
     w3m-buffer-unseen))
+
+(defun w3m-visited-file-modtime ()
+  "Replacement of `visited-file-modtime'.
+It returns a list of two integers if the current buffer visits a file,
+otherwise returns the number 0.  In modern Emacsen, this function will
+get to be the alias to `visited-file-modtime'."
+  (let ((modtime (visited-file-modtime)))
+    (cond ((consp (cdr-safe modtime))
+	   (defalias 'w3m-visited-file-modtime 'visited-file-modtime)
+	   modtime)
+	  ((integerp (cdr-safe modtime))
+	   ;; XEmacs version returns `(0 . 0)' if no file is visited.
+	   (if (and (= (car modtime) 0) (= (cdr modtime) 0))
+	       0
+	     (list (car modtime) (cdr modtime))))
+	  (t
+	   modtime))))
 
 (provide 'w3m-util)
 
