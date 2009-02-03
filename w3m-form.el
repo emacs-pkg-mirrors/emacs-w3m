@@ -348,11 +348,12 @@ If no field in forward, return nil without moving."
 	(mapconcat (lambda (elem)
 		     (setq elem (cdr elem))
 		     (format "%s=%s"
-			     (w3m-url-encode-string (car elem) coding)
+			     (w3m-url-encode-string (car elem) coding t)
 			     (w3m-url-encode-string (if (stringp (cdr elem))
 							(cdr elem)
 						      "")
-						    coding)))
+						    coding
+						    t)))
 		   bufs "&")))))
 
 (defun w3m-form-resume (forms)
@@ -1511,6 +1512,8 @@ selected rather than \(as usual\) some other window.  See
     'w3m-form-input-select-exit)
   (define-key w3m-form-input-select-keymap "q"
     'w3m-form-input-select-exit)
+  (define-key w3m-form-input-select-keymap "\C-g"
+    'w3m-form-input-select-exit)
   (define-key w3m-form-input-select-keymap "h" 'backward-char)
   (define-key w3m-form-input-select-keymap "j" 'next-line)
   (define-key w3m-form-input-select-keymap "k" 'previous-line)
@@ -1685,6 +1688,8 @@ selected rather than \(as usual\) some other window.  See
   (define-key w3m-form-input-map-keymap "\C-c\C-k"
     'w3m-form-input-map-exit)
   (define-key w3m-form-input-map-keymap "q"
+    'w3m-form-input-map-exit)
+  (define-key w3m-form-input-map-keymap "\C-g"
     'w3m-form-input-map-exit)
   (define-key w3m-form-input-map-keymap "h" 'backward-char)
   (define-key w3m-form-input-map-keymap "j" 'next-line)
