@@ -1,6 +1,6 @@
 ;;; w3m-proc.el --- Functions and macros to control sub-processes
 
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
 ;; TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Authors: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
@@ -57,7 +57,8 @@
   (defvar w3m-async-exec)
   (defvar w3m-process-connection-type)
   (defvar w3m-process-modeline-format)
-  (defvar w3m-work-buffer-list))
+  (defvar w3m-work-buffer-list)
+  (autoload 'w3m-idle-images-show-unqueue "w3m"))
 
 ;; Silence the Emacs' byte-compiler that says ``might not be defined''.
 (eval-when-compile
@@ -293,6 +294,7 @@ which have no handler."
 		       (w3m-kill-buffer (w3m-process-handler-buffer handler)))
 		     nil)))
 	       w3m-process-queue)))
+  (w3m-idle-images-show-unqueue buffer)
   (when (buffer-name buffer)
     (with-current-buffer buffer
       (setq w3m-current-process nil)))
@@ -342,7 +344,7 @@ otherwise returns nil."
     (let ((start (current-time)))
       (while (or (and (prog2
 			  (discard-input)
-			  (not (save-current-buffer (sit-for 1)))
+			  (not (save-current-buffer (sit-for 0.1)))
 			(discard-input))
 		      ;; Some input is detected but it may be a key
 		      ;; press event which should be ignored when the
@@ -531,6 +533,8 @@ evaluated in a temporary buffer."
     (unwind-protect
 	(if (buffer-name (process-buffer process))
 	    (with-current-buffer (process-buffer process)
+	      (w3m-static-unless (featurep 'xemacs)
+		(accept-process-output process 1))
 	      (setq w3m-process-queue
 		    (delq w3m-process-object w3m-process-queue))
 	      (let ((exit-status (process-exit-status process))

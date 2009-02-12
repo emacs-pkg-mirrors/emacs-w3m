@@ -1,7 +1,206 @@
+2009-02-12  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-buffer-setup): Add keymap that cycles buffers as usual to
+	mode-line-buffer-identification.
+
+2009-02-09  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m-bookmark.el (w3m-bookmark-view, w3m-bookmark-view-new-session)
+	(w3m-bookmark-make-menu-items): Check if bookmark file exists.
+
+2009-02-04  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-header-line-insert): Don't decode url containing
+	non-ASCII characters already.  e.g. about://weather/WHERE
+
+2009-02-03  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* mew-w3m.el (mew-w3m-cid-retrieve): Remove a wrong set-buffer().
+
+2009-02-03  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-input-url): Offer decoded url in the minibuffer.
+	(w3m-copy-buffer): Copy w3m-current-coding-system.
+	(w3m-header-line-insert): Display decoded url.
+
+2009-02-02  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m-idle-images-show): Change the order of image retrieving.
+	(w3m-toggle-inline-images-internal): Use `w3m-idle-image-item'
+	text-property.
+	(w3m-goto-url): Add new argument `no-popup'.
+	(w3m-goto-url-with-timer): Call w3m-goto-url with `no-popup' nil.
+
+2009-02-01  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m-toggle-inline-images-internal): Add new argument
+	`safe-regexp'.
+	(w3m-toggle-inline-images): Pass `safe-regexp' to
+	w3m-toggle-inline-images-internal when called non-interactively.
+
+2009-01-28  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m-proc.el: Autoload w3m-idle-images-show-unqueue when compiling.
+
+2009-01-27  Naohiro Aota  <naota@elisp.net>
+
+	* w3m-proc.el (w3m-process-stop): Call `w3m-idle-images-show-unqueue'.
+
+	* w3m.el (w3m-idle-images-show-timer, w3m-idle-images-show-list)
+	(w3m-idle-images-show-interval): New variables.
+	(w3m-idle-images-show, w3m-idle-images-show-unqueue): New functions.
+	(w3m-toggle-inline-images-internal): Use them.
+
+2009-01-26  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m-content-type-alist): Add "application/x-pdf" content
+	type.
+
+2009-01-21  Kevin Ryde  <user42@zip.com.au>
+
+	* w3m.el (w3m-search-name-anchor): Return true meaning "found" if
+	point is already at the anchor position.
+
+2009-01-21  Naohiro Aota  <naota@elisp.net>
+
+	* w3m-session.el (w3m-session-last-autosave-session): Check if
+	autosaved sessions set exists before asking whether to load the last
+	sessions set; Search older sessions sets when the last sessions set
+	doesn't exist (maybe it is removed by user); Load autosaved sessions
+	set when w3m-session-load-last-sessions is non-nil.
+	(w3m-session-load-last-sessions): Fix docstring; Change `auto' to `t'.
+	(w3m-session-crash-recovery-title): New variable.
+	(w3m-session-load-crashed-sessions): Ditto.
+	(w3m-session-crash-recovery-save): New function.
+
+	* w3m.el (w3m-goto-url): Save sessions set for crash recovering.
+	(w3m-delete-buffer): Ditto.
+	(w3m): Load crashed sessions if necessary.  Suggested by Samuel Wales
+	<samologist@gmail.com>.
+
+2009-01-20  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (w3m-fontify-anchors): Use new `w3m-balloon-help'
+	text-property for balloon help.
+	(w3m-fontify-images): Ditto and create help together href, alt and URL
+	of image.
+
+2009-01-19  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m-image-anchor): Fix docstring.
+	(toplevel): Fix w3m-image-anchor-face's alias.
+
+2009-01-15  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (w3m-fontify-images): Put the 'full alt text' on new
+	'w3m-image-alt' property.
+	(w3m-print-this-url): Print the content of 'w3m-image-alt'.
+
+	* w3m-util.el (w3m-image-alt): New macro.
+
+2009-01-14  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* doc/Makefile.in (.texi.info): Use --no-split.
+
+2009-01-11  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m): Move last session restoring asking afterward, so that
+	the restoring wouldn't be avoided by w3m-input-url's input.
+
+	* w3m-session.el (w3m-session-last-autosave-session): Follow the above
+	change.
+
+2009-01-10  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m): Check whether to load the last autosaved
+	sessions.  Suggested by Samuel Wales <samologist@gmail.com>.
+
+	* w3m-session.el (w3m-session-automatic-keep-number): New variable.
+	Suggested by Samuel Wales <samologist@gmail.com>.
+	(w3m-session-automatic-save): Use it.
+	(w3m-session-last-autosave-session): New function.
+	(w3m-session-load-last-sessions): New variable.
+
+	* w3m.el (w3m-image-anchor): New face.
+	(w3m-fontify-images): Use it.
+
+2009-01-09  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-language): Allow the value like "Japanese (UTF-8)" of
+	current-language-environment.
+
+	* w3m-symbol.el (w3m-symbol): Ditto.
+
+	* w3mhack.el (w3mhack-makeinfo): Use locale-coding-system for Emacs to
+	encode Japanese messages.
+
+2009-01-09  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (w3m-create-text-page, w3m-goto-url): Check if the url is
+	arrived before getting real-url.
+
+2009-01-06  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (top): Add the variable definitions of
+	`w3m-tab-menubar-make-items-preitems' and `w3m-session-menu-items-pre'
+	to avoid byte-compile warnings.
+	(w3m-setup-menu): Move the postion of session menu.
+	(w3m-mouse-major-mode-menu): Add session menu.
+
+	* w3m-xmas.el (autoload): Add w3m-setup-session-menu.
+	(w3m-menu-on-forefront): Treat "Session" menu.
+	(w3m-setup-menu): Call `w3m-setup-session-menu'.
+
+2008-12-30  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (w3m-select-buffer-mode-map): Bind `w3m-select-buffer-quit' to
+	C-g.
+
+	* w3m-session.el (w3m-session-select-mode-map): Bind
+	`w3m-session-select-quit' to C-g.
+
+	* w3m-form.el (w3m-form-input-select-keymap): Bind
+	`w3m-form-input-select-keymap' to C-g.
+	(w3m-form-input-map-keymap): Bind `w3m-form-input-map-exit' to C-g.
+
+2008-12-17  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m-session.el (w3m-session-select-mode-map): Add new key.
+	(w3m-session-select-mode): Modify doc-string.
+	(w3m-session-select-rename): New command.
+	(w3m-session-rename): New function.
+
+2008-12-17  Naohiro Aota  <naota@elisp.net>
+
+	* w3m.el (autoload): Add w3m-setup-session-menu.
+	(w3m-menubar): Moved session menu to w3m-session-menu-items.
+	(top): Call w3m-setup-session-menu.
+
+	* w3m-session.el: Change to use major mode; Add session menu.
+	(w3m-session-unknown-title): New option.
+
+2008-12-15  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-compatible-encoding-alist): Add (gb2312 . gbk).
+
+2008-12-12  David Engster  <dengste@eml.cc>
+
+	* w3m-proc.el (w3m-process-wait-process): Reduce sit-for time.
+	(w3m-process-sentinel): Wait for process output (on Emacs only).
+
+2008-12-08  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-show-redirection-error-information): Improve the
+	error message.
+
 2008-12-10  Naohiro Aota  <nao.aota@gmail.com>
 
-	* w3m.el (w3m-url-encode-string): Encode SPC only when
-	encode-space is non-nil.
+	* w3m.el (w3m-next-anchor): Go to the first anchor when next
+	anchor is not found.
+	(w3m-previous-anchor): Go to the last anchor when previous anchor
+	is not found.
+	(w3m-url-encode-string): Encode SPC only when encode-space is
+	non-nil.
 
 	* w3m-form.el (w3m-form-make-form-data): Follow the above change.
 
@@ -164,7 +363,7 @@
 
 	* w3m-ems.el (w3m-create-image): Use it.
 	(w3m-initialize-graphic-icons): Check if xpm is available.  Reported by
-	Diego 'Flameeyes' Pettenò <flameeyes@gmail.com>.
+	Diego 'Flameeyes' Petten,Ar <flameeyes@gmail.com>.
 
 	* w3m-filter.el (w3m-filter-wikipedia): Improve regexp.
 
@@ -8452,7 +8651,7 @@
 	* w3m-bug.el: New file.
 
 	* w3m.el: Autoload "w3m-bug" for `report-emacs-w3m-bug'.
-	(w3m-lynx-like-map): Bind `report-emacs-w3m-bug' to C-cb.
+	(w3m-lynx-like-map): Bind `report-emacs-w3m-bug' to C-cb.<
 	(w3m-info-like-map): Ditto.
 
 	* w3m-om.el (compose-mail): New function.
