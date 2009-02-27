@@ -1,6 +1,6 @@
 ;;; w3m-util.el --- Utility macros and functions for emacs-w3m
 
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 ;; TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Authors: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
@@ -210,6 +210,15 @@ to the position where the property exists."
   (if position
       `(get-text-property ,position 'w3m-image)
     `(w3m-get-text-property-around 'w3m-image)))
+
+(defmacro w3m-image-alt (&optional position)
+  "Return the value of the `w3m-image-alt' property at the given POSITION.
+NOTE: If POSITION is omitted, it searches for the property in one
+character before and behind the current position, and point will move
+to the position where the property exists."
+  (if position
+      `(get-text-property ,position 'w3m-image-alt)
+    `(w3m-get-text-property-around 'w3m-image-alt)))
 
 (defmacro w3m-submit (&optional position)
   "Return the value of the `w3m-submit' property at the given POSITION.
@@ -673,9 +682,12 @@ objects will not be deleted:
 			    (if (eq w exception)
 				(setq flag nil)
 			      (set-buffer (window-buffer w))
-			      (setq flag (memq major-mode
-					       '(w3m-mode
-						 w3m-select-buffer-mode))))))
+			      (setq flag (or (memq major-mode
+						   '(w3m-mode
+						     w3m-select-buffer-mode
+						     w3m-session-select-mode))
+					     (string-match "\\` ?\\*w3m[ -]"
+							   (buffer-name)))))))
 			'no-minibuf)
 		       (set-buffer buffer)
 		       flag))
@@ -1030,19 +1042,20 @@ the region active."
       (list 'region-active-p)
     (list 'and 'transient-mark-mode 'mark-active)))
 
-(cond
- ((fboundp 'replace-regexp-in-string)
-  (defun w3m-replace-in-string  (string regexp newtext &optional literal)
-    ;;(replace-regexp-in-string regexp newtext string nil literal)))
-    ;;
-    ;; Don't call the symbol function `replace-regexp-in-string' directly
-    ;; in order to silence the byte-compiler when an Emacs which doesn't
-    ;; provide it is used.  The following form generates exactly the same
-    ;; byte-code.
-    (funcall (symbol-function 'replace-regexp-in-string)
-	     regexp newtext string nil literal)))
- (t
-  (defalias 'w3m-replace-in-string 'replace-in-string)))
+(eval-and-compile
+  (cond
+   ((fboundp 'replace-regexp-in-string)
+    (defun w3m-replace-in-string  (string regexp newtext &optional literal)
+      ;;(replace-regexp-in-string regexp newtext string nil literal)))
+      ;;
+      ;; Don't call the symbol function `replace-regexp-in-string' directly
+      ;; in order to silence the byte-compiler when an Emacs which doesn't
+      ;; provide it is used.  The following form generates exactly the same
+      ;; byte-code.
+      (funcall (symbol-function 'replace-regexp-in-string)
+	       regexp newtext string nil literal)))
+   (t
+    (defalias 'w3m-replace-in-string 'replace-in-string))))
 
 (if (fboundp 'compare-strings)
     (defalias 'w3m-compare-strings 'compare-strings)
@@ -1079,6 +1092,36 @@ If SECONDS is omitted, it defaults to 0.5."
 		       (w3m-force-window-update)))
 		   buffer))
   (defalias 'w3m-force-window-update-later 'ignore))
+
+(if (fboundp 'read-number)
+    (defalias 'w3m-read-number 'read-number)
+  (defun w3m-read-number (prompt &optional default)
+    "Read a numeric value in the minibuffer, prompting with PROMPT.
+DEFAULT specifies a default value to return if the user just types RET.
+The value of DEFAULT is inserted into PROMPT."
+    (let ((n nil))
+      (when default
+	(setq prompt
+	      (if (string-match "\\(\\):[ \t]*\\'" prompt)
+		  (replace-match (format " (default %s)" default) t t prompt 1)
+		(w3m-replace-in-string prompt "[ \t]*\\'"
+				       (format " (default %s) " default)
+				       t))))
+      (while
+	  (progn
+	    (let ((str (read-from-minibuffer
+			prompt nil nil nil nil
+			(and default (number-to-string default)))))
+	      (condition-case nil
+		  (setq n (cond
+			   ((zerop (length str)) default)
+			   ((stringp str) (read str))))
+		(error nil)))
+	    (unless (numberp n)
+	      (message "Please enter a number.")
+	      (sit-for 1)
+	      t)))
+      n)))
 
 (defun w3m-make-menu-item (japan english)
   "Make menu item."
