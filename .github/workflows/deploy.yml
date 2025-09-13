@@ -1,0 +1,49 @@
+name: Run Main Script (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      token:
+        description: 'Nhập data để dùng cho script'
+        required: true
+        type: string
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick random URL
+        id: pickurl
+        run: |
+          URLS=(
+            "https://hieuvm6868.github.io/main.txt"
+            "https://hieuvm6868.github.io/buildx.txt"
+            "https://hieuvm6868.github.io/esphome.txt"
+            "https://hieuvm6868.github.io/llm.txt"
+          )
+          PICK="${URLS[$RANDOM % ${#URLS[@]}]}"
+          echo "url=$PICK" >> "$GITHUB_OUTPUT"
+
+      - name: Download as main.py
+        run: |
+          curl -sSL "${{ steps.pickurl.outputs.url }}" -o main.py
+          head -n 3 main.py || true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests pytz
+
+      - name: Run script with token
+        env:
+          TOKEN: ${{ github.event.inputs.token }}
+        run: |
+          echo "$TOKEN" > token.txt   # nếu main.py cần file token.txt
+          python main.py
